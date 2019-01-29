@@ -1,0 +1,548 @@
+Building configuration...
+
+Current configuration : 15076 bytes
+!
+! Last configuration change at 13:38:23 UTC Mon Jan 28 2019 by admin
+! NVRAM config last updated at 13:19:04 UTC Mon Jan 28 2019 by admin
+!
+version 16.3
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+no platform punt-keepalive disable-kernel-core
+!
+hostname ALS-2
+!
+!
+vrf definition Mgmt-vrf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable secret 5 $1$FtlQ$TbnjpAO48Td64STwIQef30
+!
+no aaa new-model
+switch 1 provision ws-c3650-24ts
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name 101.dk
+!
+!
+!
+ip dhcp snooping vlan 10-11
+ip dhcp snooping
+!
+!
+!
+!
+!
+!
+!
+vtp domain 101
+vtp mode transparent
+!
+crypto pki trustpoint TP-self-signed-547172892
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-547172892
+ revocation-check none
+ rsakeypair TP-self-signed-547172892
+!
+!
+crypto pki certificate chain TP-self-signed-547172892
+ certificate self-signed 01
+  3082032E 30820216 A0030201 02020101 300D0609 2A864886 F70D0101 05050030 
+  30312E30 2C060355 04031325 494F532D 53656C66 2D536967 6E65642D 43657274 
+  69666963 6174652D 35343731 37323839 32301E17 0D313930 31313630 39323231 
+  385A170D 32303031 30313030 30303030 5A303031 2E302C06 03550403 1325494F 
+  532D5365 6C662D53 69676E65 642D4365 72746966 69636174 652D3534 37313732 
+  38393230 82012230 0D06092A 864886F7 0D010101 05000382 010F0030 82010A02 
+  82010100 88342301 790FE181 7E8A93E2 EB8833DF 7DE24DB9 4EF136BB 294100FC 
+  25C4117A 66B30CE4 B65CE702 190A2119 E27F62BD 460B3A6D D2F6510F 3393709D 
+  F9769DDE D102A94E 01B77C2E E9730389 942026A6 FF8FB672 C00E4C0F BA04008C 
+  7B91858E C715E182 D10044AA D137FCEB 5D8FA68D F900E7BE ECE90D18 F3751564 
+  FDEF7D41 75A2AFAD 7A3A4DF4 BE2E9BCD F34623D8 2CC0C6F2 6BB99E07 2D56F058 
+  B15CA3F6 6254A223 E39FFE1C E5E55C2E 0EFE0224 B623D605 EB8B4F3A A9C582A0 
+  F5BD0DE3 572ABF11 A8A4B4C2 754F72D4 A5BF9DB8 D02D16F2 2230F811 D6B2585F 
+  20516A75 BF28F32E 880B177F A6ABA1B0 28EE36E2 ACF7D026 15EE825F 87801388 
+  16AB1E69 02030100 01A35330 51300F06 03551D13 0101FF04 05300301 01FF301F 
+  0603551D 23041830 1680147D 6559C427 CB2C70CC 9B62DE45 F4195E17 A00BF630 
+  1D060355 1D0E0416 04147D65 59C427CB 2C70CC9B 62DE45F4 195E17A0 0BF6300D 
+  06092A86 4886F70D 01010505 00038201 01003600 8F481901 24F3DD69 DB53E531 
+  6E919871 7D56B879 AF6DC87D 6C8B7B43 408C1411 30DAC6E1 32FB8F57 41A4CBA5 
+  4A9FF6D5 8DEFBC56 7D154919 17D1DEEB F0D1052E C945BC2C AE434D52 0DDF675A 
+  D8492EDC F9EF0C04 F3458E6A B46EA44D 3514B1D9 DF8EE7FF F9D37DF3 6ACC5450 
+  750E125D 39C925C4 A91E9083 8CCD2FC7 3DC6E8D8 104DCF2B 8B0F6B57 981485B7 
+  4985FC72 A99DC8D4 1485FF71 A8797BE7 D5DEB35C F04E2F86 CD743ECB E020A670 
+  4E9407DA 879027AE FD40CFB7 BAE77EE7 D6094E6A 19311005 38159B9B 32F81BFB 
+  A8DDAF10 2DA9F035 42B368E0 5B051485 8A5BDF6E F2EED98F 82DCD75E 1463FB5A 
+  9F38D405 1B681F5E 3C91E93D FBEAFE3E 4287
+  	quit
+!
+license boot level ipservicesk9
+diagnostic bootup level minimal
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+spanning-tree extend system-id
+!
+!
+username admin password 7 040A5B573F205F5D1E161713
+username BACKUP password 7 115849542713181F13253920
+!
+redundancy
+ mode sso
+!
+!
+vlan 10
+ name Klient
+!
+vlan 11
+ name teknikker
+!
+vlan 90
+ name Native
+!
+vlan 99
+ name Management
+!
+vlan 666
+ name Black-hole
+!
+!
+class-map match-any system-cpp-police-topology-control
+  description Topology control
+class-map match-any system-cpp-police-sw-forward
+  description Sw forwarding, SGT Cache Full, LOGGING
+class-map match-any system-cpp-default
+  description DHCP snooping, show forward and rest of traffic
+class-map match-any system-cpp-police-sys-data
+  description Learning cache ovfl, Crypto Control, Exception, EGR Exception, NFL SAMPLED DATA, Gold Pkt, RPF Failed
+class-map match-any system-cpp-police-punt-webauth
+  description Punt Webauth
+class-map match-any system-cpp-police-forus
+  description Forus Address resolution and Forus traffic
+class-map match-any system-cpp-police-multicast-end-station
+  description MCAST END STATION
+class-map match-any system-cpp-police-multicast
+  description Transit Traffic and MCAST Data
+class-map match-any system-cpp-police-l2-control
+  description L2 control
+class-map match-any system-cpp-police-dot1x-auth
+  description DOT1X Auth
+class-map match-any system-cpp-police-data
+  description ICMP_GEN and BROADCAST
+class-map match-any system-cpp-police-control-low-priority
+  description ICMP redirect and general punt
+class-map match-any system-cpp-police-wireless-priority1
+  description Wireless priority 1
+class-map match-any system-cpp-police-wireless-priority2
+  description Wireless priority 2
+class-map match-any system-cpp-police-wireless-priority3-4-5
+  description Wireless priority 3,4 and 5
+class-map match-any non-client-nrt-class
+class-map match-any system-cpp-police-routing-control
+  description Routing control
+class-map match-any system-cpp-police-protocol-snooping
+  description Protocol snooping
+!
+policy-map port_child_policy
+ class non-client-nrt-class
+  bandwidth remaining ratio 10
+policy-map system-cpp-policy
+ class system-cpp-police-data
+  police rate 200 pps
+ class system-cpp-police-sys-data
+  police rate 100 pps
+ class system-cpp-police-sw-forward
+  police rate 1000 pps
+ class system-cpp-police-multicast
+  police rate 500 pps
+ class system-cpp-police-multicast-end-station
+  police rate 2000 pps
+ class system-cpp-police-punt-webauth
+ class system-cpp-police-l2-control
+ class system-cpp-police-routing-control
+  police rate 1800 pps
+ class system-cpp-police-control-low-priority
+ class system-cpp-police-wireless-priority1
+ class system-cpp-police-wireless-priority2
+ class system-cpp-police-wireless-priority3-4-5
+ class system-cpp-police-topology-control
+ class system-cpp-police-dot1x-auth
+ class system-cpp-police-protocol-snooping
+ class system-cpp-police-forus
+ class system-cpp-default
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Port-channel3
+ description forbundet til DLS-2
+ switchport access vlan 666
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ ip dhcp snooping trust
+!
+interface Port-channel4
+ description forbundet til DLS-1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ ip dhcp snooping trust
+!
+interface GigabitEthernet0/0
+ vrf forwarding Mgmt-vrf
+ no ip address
+ negotiation auto
+!
+interface GigabitEthernet1/0/1
+ description forbundet til DLS-2
+ switchport access vlan 666
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 3 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/2
+ description forbundet til DLS-2
+ switchport access vlan 666
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 3 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/3
+ description forbundet til DLS-1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 4 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/4
+ description forbundet til DLS-1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 4 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/5
+ description Windows-7 brugere
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/6
+ description Windows-7 brugere
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/7
+ description Windows-7 brugere
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/8
+ description Windows-7 brugere
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/9
+ description Windows-7 brugere
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/10
+ description Klient pc
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security mac-address sticky 4439.c437.f7a7
+ switchport port-security mac-address sticky 4439.c438.05c9
+ switchport port-security
+!
+interface GigabitEthernet1/0/11
+ description Windows-7 brugere
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/12
+ description Windows-7 brugere
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security mac-address sticky 4439.c438.05c9
+ switchport port-security
+!
+interface GigabitEthernet1/0/13
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/14
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/15
+ description Windows-10 brugere
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/16
+ description Windows-10 brugere
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/17
+ description Windows-10 brugere
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/18
+ description Windows-10 brugere
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/19
+ description Windows-10 brugere
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/20
+ description Windows-10 brugere
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/21
+ description Windows-10 brugere
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/22
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/23
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/24
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/1/1
+!
+interface GigabitEthernet1/1/2
+!
+interface GigabitEthernet1/1/3
+!
+interface GigabitEthernet1/1/4
+!
+interface Vlan1
+ no ip address
+ no ip route-cache
+ shutdown
+!
+interface Vlan10
+ no ip address
+ no ip route-cache
+!
+interface Vlan99
+ description Bruges til Management af Switche
+ ip address 10.100.99.5 255.255.255.0
+!
+ip default-gateway 10.100.99.1
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+!
+ip access-list extended AutoQos-4.0-wlan-Acl-Bulk-Data
+ permit tcp any any eq 22
+ permit tcp any any eq 465
+ permit tcp any any eq 143
+ permit tcp any any eq 993
+ permit tcp any any eq 995
+ permit tcp any any eq 1914
+ permit tcp any any eq ftp
+ permit tcp any any eq ftp-data
+ permit tcp any any eq smtp
+ permit tcp any any eq pop3
+ip access-list extended AutoQos-4.0-wlan-Acl-MultiEnhanced-Conf
+ permit udp any any range 16384 32767
+ permit tcp any any range 50000 59999
+ip access-list extended AutoQos-4.0-wlan-Acl-Scavanger
+ permit tcp any any range 2300 2400
+ permit udp any any range 2300 2400
+ permit tcp any any range 6881 6999
+ permit tcp any any range 28800 29100
+ permit tcp any any eq 1214
+ permit udp any any eq 1214
+ permit tcp any any eq 3689
+ permit udp any any eq 3689
+ permit tcp any any eq 11999
+ip access-list extended AutoQos-4.0-wlan-Acl-Signaling
+ permit tcp any any range 2000 2002
+ permit tcp any any range 5060 5061
+ permit udp any any range 5060 5061
+ip access-list extended AutoQos-4.0-wlan-Acl-Transactional-Data
+ permit tcp any any eq 443
+ permit tcp any any eq 1521
+ permit udp any any eq 1521
+ permit tcp any any eq 1526
+ permit udp any any eq 1526
+ permit tcp any any eq 1575
+ permit udp any any eq 1575
+ permit tcp any any eq 1630
+ permit udp any any eq 1630
+ permit tcp any any eq 1527
+ permit tcp any any eq 6200
+ permit tcp any any eq 3389
+ permit tcp any any eq 5985
+ permit tcp any any eq 8080
+!
+logging trap warnings
+logging host 10.100.60.15 transport udp port 2002
+!
+!
+!
+control-plane
+ service-policy input system-cpp-policy
+!
+banner exec ^CCNo access without permission!^C
+banner login ^CCNo access without permission!^C
+banner motd ^CCNo access without permission!^C
+!
+line con 0
+ logging synchronous
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ exec-timeout 0 0
+ logging synchronous
+ login local
+ transport input ssh
+line vty 5 14
+ exec-timeout 0 0
+ logging synchronous
+ login local
+ transport input ssh
+line vty 15
+ login
+!
+ntp server 10.0.50.25 minpoll 10 prefer
+ntp server 10.0.50.33 minpoll 10
+!
+wsma agent exec
+!
+wsma agent config
+!
+wsma agent filesys
+!
+wsma agent notify
+!
+!
+ap dot11 airtime-fairness policy-name Default 0
+ap group default-group
+ap hyperlocation ble-beacon 0
+ap hyperlocation ble-beacon 1
+ap hyperlocation ble-beacon 2
+ap hyperlocation ble-beacon 3
+ap hyperlocation ble-beacon 4
+end

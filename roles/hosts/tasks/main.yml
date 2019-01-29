@@ -1,0 +1,32 @@
+---
+- name: Sikre at hostnavnet på maskinen er sat til det samme som inventory_hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+  tags:
+    - hostname
+
+- sysctl:
+    name: "kernel.hostname"
+    value: "{{ inventory_hostname }}"
+    state: present
+  tags:
+    - hostname
+
+- name: Sikre at hosts filen er opdateret med det nye hostnavn, og evt. custom hosts er tilføjet
+  template:
+    src: "hosts.j2"
+    dest: "/etc/hosts"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  tags:
+    - hosts
+
+- name: cloud image, set preserve hostname
+  lineinfile:
+    path: "/etc/cloud/cloud.cfg"
+    line: "preserve_hostname: true"
+    regexp: "^preserve_hostname.+"
+    state: present
+  tags:
+    - hosts

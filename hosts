@@ -1,0 +1,24 @@
+[icinga]
+icinga1.101.loc
+
+[haproxy]
+haproxy1.101.loc keepalived_priority=101
+haproxy2.101.loc keepalived_priority=100
+
+[haproxy:vars]
+vrrp_private_vip="{{ lookup('dig', 'haproxy.101.loc') }}"
+
+[web]
+web1.101.loc
+web2.101.loc
+
+[mysql]
+mysql1.101.loc
+mysql2.101.loc
+mysql3.101.loc
+
+[mysql-master]
+mysql1.101.loc
+
+[syslog]
+syslog1.101.loc

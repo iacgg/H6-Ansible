@@ -1,0 +1,37 @@
+########################
+# Custom Rewrites
+########################
+
+{%- set rewrites_lists = syslog_ng_log | json_query('[*].rewrites') %}
+{%- set rewrite_all = [] -%}
+
+{%- for rewrites in rewrites_lists %}
+{%- for src in rewrites %}
+{{ rewrite_all.append(src) }}
+{% endfor -%}
+{% endfor -%}
+
+{%- for rewrite in rewrite_all|unique %}
+
+{%- if rewrite == "r_file_name_cron" %}
+rewrite r_file_name_cron {
+    subst(
+        "/var/log/app-tasks/",
+        "", value(FILE_NAME)
+    );
+    subst(
+	"/current",
+	"", value(FILE_NAME)
+    );
+};
+{% endif -%}
+
+{%- if rewrite == "r_message_add_file_name" %}
+rewrite r_message_add_file_name {
+     set("$FILE_NAME: $MESSAGE",
+     value("MESSAGE")
+    );
+};
+{% endif -%}
+
+{% endfor -%}

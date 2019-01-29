@@ -1,0 +1,629 @@
+Building configuration...
+
+Current configuration : 16829 bytes
+!
+! Last configuration change at 15:20:44 DKTime Mon Jan 28 2019 by admin
+! NVRAM config last updated at 15:20:48 DKTime Mon Jan 28 2019 by admin
+!
+version 16.3
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+no platform punt-keepalive disable-kernel-core
+!
+hostname DLS-1
+!
+!
+vrf definition DMZ
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition Klient
+ !
+ address-family ipv4
+ exit-address-family
+!
+vrf definition Mgmt-vrf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable secret 5 $1$p7S1$rJwCKuyfPLkXFQckbOcZo.
+!
+no aaa new-model
+clock timezone DKTime 1 0
+clock summer-time DKTime recurring
+switch 1 provision ws-c3650-24ts
+!
+!
+!
+!
+ip routing
+!
+!
+!
+no ip domain lookup
+ip domain name 101.dk
+no ip cef optimize neighbor resolution
+ip dhcp relay information trust-all
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+vtp domain 101
+vtp mode transparent
+!
+crypto pki trustpoint TP-self-signed-1717978507
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-1717978507
+ revocation-check none
+ rsakeypair TP-self-signed-1717978507
+!
+!
+crypto pki certificate chain TP-self-signed-1717978507
+ certificate self-signed 01
+  30820330 30820218 A0030201 02020101 300D0609 2A864886 F70D0101 05050030 
+  31312F30 2D060355 04031326 494F532D 53656C66 2D536967 6E65642D 43657274 
+  69666963 6174652D 31373137 39373835 3037301E 170D3139 30313136 30373437 
+  31365A17 0D323030 31303130 30303030 305A3031 312F302D 06035504 03132649 
+  4F532D53 656C662D 5369676E 65642D43 65727469 66696361 74652D31 37313739 
+  37383530 37308201 22300D06 092A8648 86F70D01 01010500 0382010F 00308201 
+  0A028201 0100BD89 E9FFC489 D12D2284 66236A30 01C31EC5 513824DD 0E6856D9 
+  432B2791 AE805C82 4088D918 64A0305A F63AF8F4 5DBE5EBE 03DA23CC 47688F42 
+  A1CC93F6 FF5516B8 93C145EA 494FF4D1 262A9990 E470FC0B 41CEC3AE 4DF0AAA6 
+  DA61D29E CB6E079E FD750971 4B7E1D71 75618417 225E46C0 4CB1BE81 1F038CC2 
+  F88A6161 34712D73 01CD09D7 048C3E2B 3581E21E 9A938508 EBABC6B4 02B35A44 
+  18BADE63 9CB03AC7 33E356C7 1AAFDECB 19CB8CDC 3D0F68F4 98D5A729 F992FC73 
+  B2D75B31 92EBDA57 9DEB2367 12D239C1 E33E4653 B75A99DA 28D67A06 2E91F318 
+  10EB392D A82816C0 85E00F6E 95B52F43 5532CFB0 B92066DC 9FF5BA5B 8BA7A140 
+  723C313E 732D0203 010001A3 53305130 0F060355 1D130101 FF040530 030101FF 
+  301F0603 551D2304 18301680 14B2D158 B76A7FD7 AAEE96CE FE94591E 10F54D5E 
+  CE301D06 03551D0E 04160414 B2D158B7 6A7FD7AA EE96CEFE 94591E10 F54D5ECE 
+  300D0609 2A864886 F70D0101 05050003 82010100 9E13BE4B EBABB834 AA210839 
+  6D972802 7D6A58EC 5218D2A1 1CD2ADD1 349BE57D A4A92757 CA739CFC 43D7F547 
+  199CEC97 BA8497F6 37979C2B C589F2AE FFD2DEB7 BCB6E519 F82B9882 19F2C3C2 
+  F7933D7A F91B3A41 94B3874D 3A05601E 4C1317DF 79823546 E06ECA7E D4052B34 
+  FB80CEE7 2D92C436 C5ADC67F 5E65069E D20A7817 E96897D7 C42E4A3F DEF0DC89 
+  3DA9D378 AB1A135F F163DC15 AAE9736B 7E281FAB 5D729C69 1A6CEE12 1E468348 
+  FCF557BE 6948C25B 0297DC25 BC73BDD9 BBAC77F9 ABDD796E E48470A1 1D7B2320 
+  3CE99C88 122E2C81 5286CCEF 1EB88DEF D6BA7A74 5894CEE2 1610E5AF BC14F64E 
+  63506013 9AB5F401 DE775F91 D6DD4F42 3DBFD79F
+  	quit
+!
+license boot level ipservicesk9
+diagnostic bootup level minimal
+!
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+spanning-tree extend system-id
+spanning-tree vlan 10,51,60,90,99 priority 24576
+spanning-tree vlan 11,52,70 priority 28672
+!
+!
+username admin password 7 075E711D7E080A16001D1908
+username BACKUP password 7 1446425A3C05393833272131
+!
+redundancy
+ mode sso
+!
+!
+vlan 10
+ name Klient
+!
+vlan 11
+ name teknikker
+!
+vlan 51
+ name DMZ1
+!
+vlan 60
+ name Server-1
+!
+vlan 70
+ name ESXI/Storage
+!
+vlan 90
+ name Native
+!
+vlan 99
+ name Management
+!
+vlan 666
+ name Black-hole
+!
+track 1 ip sla 1
+!
+!
+class-map match-any system-cpp-police-topology-control
+  description Topology control
+class-map match-any system-cpp-police-sw-forward
+  description Sw forwarding, SGT Cache Full, LOGGING
+class-map match-any system-cpp-default
+  description DHCP snooping, show forward and rest of traffic
+class-map match-any system-cpp-police-sys-data
+  description Learning cache ovfl, Crypto Control, Exception, EGR Exception, NFL SAMPLED DATA, Gold Pkt, RPF Failed
+class-map match-any system-cpp-police-punt-webauth
+  description Punt Webauth
+class-map match-any system-cpp-police-forus
+  description Forus Address resolution and Forus traffic
+class-map match-any system-cpp-police-multicast-end-station
+  description MCAST END STATION
+class-map match-any system-cpp-police-multicast
+  description Transit Traffic and MCAST Data
+class-map match-any system-cpp-police-l2-control
+  description L2 control
+class-map match-any system-cpp-police-dot1x-auth
+  description DOT1X Auth
+class-map match-any system-cpp-police-data
+  description ICMP_GEN and BROADCAST
+class-map match-any system-cpp-police-control-low-priority
+  description ICMP redirect and general punt
+class-map match-any system-cpp-police-wireless-priority1
+  description Wireless priority 1
+class-map match-any system-cpp-police-wireless-priority2
+  description Wireless priority 2
+class-map match-any system-cpp-police-wireless-priority3-4-5
+  description Wireless priority 3,4 and 5
+class-map match-any non-client-nrt-class
+class-map match-any system-cpp-police-routing-control
+  description Routing control
+class-map match-any system-cpp-police-protocol-snooping
+  description Protocol snooping
+!
+policy-map port_child_policy
+ class non-client-nrt-class
+  bandwidth remaining ratio 10
+policy-map system-cpp-policy
+ class system-cpp-police-data
+  police rate 200 pps
+ class system-cpp-police-sys-data
+  police rate 100 pps
+ class system-cpp-police-sw-forward
+  police rate 1000 pps
+ class system-cpp-police-multicast
+  police rate 500 pps
+ class system-cpp-police-multicast-end-station
+  police rate 2000 pps
+ class system-cpp-police-punt-webauth
+ class system-cpp-police-l2-control
+ class system-cpp-police-routing-control
+  police rate 1800 pps
+ class system-cpp-police-control-low-priority
+ class system-cpp-police-wireless-priority1
+ class system-cpp-police-wireless-priority2
+ class system-cpp-police-wireless-priority3-4-5
+ class system-cpp-police-topology-control
+ class system-cpp-police-dot1x-auth
+ class system-cpp-police-protocol-snooping
+ class system-cpp-police-forus
+ class system-cpp-default
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Port-channel1
+ description forbundet til ALS-1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+!
+interface Port-channel4
+ description forbundet til ALS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+!
+interface Port-channel5
+ description Trunk mellem DLS 1 og DLS 2 i VRF Klient
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,60,70,90,99
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface Port-channel6
+ description Trunk mellem DLS 1 og DLS 2 i VRF DMZ
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 51,52,90
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface GigabitEthernet0/0
+ vrf forwarding Mgmt-vrf
+ no ip address
+ negotiation auto
+!
+interface GigabitEthernet1/0/1
+ description forbundet til pfSense-1 i DMZ VRF
+ no switchport
+ vrf forwarding DMZ
+ ip address 10.0.50.6 255.255.255.252
+ ip ospf message-digest-key 1 md5 7 105E080A16001D1908
+ ip ospf network point-to-point
+!
+interface GigabitEthernet1/0/2
+ description forbundet til ESXI-1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 51,60,70,90
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface GigabitEthernet1/0/3
+ description forbundet til ESXI-1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 51,60,70,90
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface GigabitEthernet1/0/4
+ description forbundet til SAN-1
+ switchport access vlan 70
+ switchport mode access
+!
+interface GigabitEthernet1/0/5
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ ip access-group Allow_VLAN11 in
+ channel-group 1 mode active
+!
+interface GigabitEthernet1/0/6
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ ip access-group Allow_VLAN11 in
+ channel-group 1 mode active
+!
+interface GigabitEthernet1/0/7
+ description forbundet til ALS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ ip access-group Allow_VLAN11 in
+ channel-group 4 mode active
+!
+interface GigabitEthernet1/0/8
+ description forbundet til ALS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ ip access-group Allow_VLAN11 in
+ channel-group 4 mode active
+!
+interface GigabitEthernet1/0/9
+ description forbundet til SAN 2
+ switchport access vlan 70
+ switchport mode access
+!
+interface GigabitEthernet1/0/10
+ description forbundet til DLS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,60,70,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 5 mode active
+!
+interface GigabitEthernet1/0/11
+ description forbundet til DLS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,60,70,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 5 mode active
+!
+interface GigabitEthernet1/0/12
+ description forbundet til Veeam vCenter
+ switchport access vlan 70
+ switchport mode access
+!
+interface GigabitEthernet1/0/13
+ description forbundet til pfSense-2 i DMZ VRF
+ no switchport
+ vrf forwarding DMZ
+ ip address 10.0.50.18 255.255.255.252
+ ip ospf message-digest-key 1 md5 7 051B071C325B411B1D
+ ip ospf network point-to-point
+!
+interface GigabitEthernet1/0/14
+ description forbundet til ESXI-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 51,60,70,90
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface GigabitEthernet1/0/15
+ description forbundet til ESXI-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 51,60,70,90
+ switchport mode trunk
+ switchport nonegotiate
+!
+interface GigabitEthernet1/0/16
+ description forbundet til pfSense-1 i Klient VRF
+ no switchport
+ vrf forwarding Klient
+ ip address 10.0.50.26 255.255.255.252
+ ip ospf message-digest-key 1 md5 7 111918160405041E00
+ ip ospf network point-to-point
+!
+interface GigabitEthernet1/0/17
+ description forbundet til pfSense-2 i Klient VRF
+ no switchport
+ vrf forwarding Klient
+ ip address 10.0.50.38 255.255.255.252
+ ip ospf message-digest-key 1 md5 7 021605481811003348
+ ip ospf network point-to-point
+ spanning-tree bpduguard disable
+!
+interface GigabitEthernet1/0/18
+ description forbundet til DLS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 51,52,90
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 6 mode active
+!
+interface GigabitEthernet1/0/19
+ description forbundet til DLS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 51,52,90
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 6 mode active
+!
+interface GigabitEthernet1/0/20
+ switchport access vlan 666
+ switchport mode access
+ shutdown
+!
+interface GigabitEthernet1/0/21
+ switchport access vlan 666
+ switchport mode access
+ shutdown
+!
+interface GigabitEthernet1/0/22
+ switchport access vlan 666
+ switchport mode access
+ shutdown
+!
+interface GigabitEthernet1/0/23
+ switchport access vlan 666
+ switchport mode access
+ shutdown
+!
+interface GigabitEthernet1/0/24
+ switchport access vlan 666
+ switchport mode access
+ shutdown
+!
+interface GigabitEthernet1/1/1
+!
+interface GigabitEthernet1/1/2
+!
+interface GigabitEthernet1/1/3
+!
+interface GigabitEthernet1/1/4
+!
+interface Vlan1
+ no ip address
+ shutdown
+!
+interface Vlan10
+ description forbundet til Klienter i Windows-7 netvaerket
+ vrf forwarding Klient
+ ip address 192.168.10.2 255.255.255.0
+ ip helper-address 10.100.60.10
+ standby version 2
+ standby 10 ip 192.168.10.1
+ standby 10 priority 110
+ standby 10 preempt
+ standby 10 track 1 decrement 20
+!
+interface Vlan11
+ description forbundet til Klienter i Windows-10 netvaerket
+ vrf forwarding Klient
+ ip address 192.168.11.2 255.255.255.0
+ ip helper-address 10.100.60.10
+ standby version 2
+ standby 11 ip 192.168.11.1
+ standby 11 preempt
+!
+interface Vlan51
+ description forbundet til Servere i DMZ1 netvaerket
+ vrf forwarding DMZ
+ ip address 10.100.51.2 255.255.255.0
+ standby version 2
+ standby 51 ip 10.100.51.1
+ standby 51 priority 110
+ standby 51 preempt
+ standby 51 track 1 decrement 20
+!
+interface Vlan60
+ description forbundet til de virtuelle maskiner i Server-1 netvaerket
+ vrf forwarding Klient
+ ip address 10.100.60.2 255.255.255.0
+ standby version 2
+ standby 60 ip 10.100.60.1
+ standby 60 priority 110
+ standby 60 preempt
+ standby 60 track 1 decrement 20
+!
+interface Vlan70
+ description forbundet mellem ESXI servere og SAN
+ vrf forwarding Klient
+ ip address 10.100.70.2 255.255.255.0
+ standby version 2
+ standby 70 ip 10.100.70.1
+ standby 70 preempt
+!
+interface Vlan99
+ description Bruges til Management af Switche
+ vrf forwarding Klient
+ ip address 10.100.99.2 255.255.255.0
+ standby version 2
+ standby 99 ip 10.100.99.1
+ standby 99 priority 110
+ standby 99 preempt
+ standby 99 track 1 decrement 20
+!
+router ospf 1 vrf Klient
+ router-id 3.3.3.3
+ area 0 authentication message-digest
+ passive-interface Vlan10
+ passive-interface Vlan11
+ passive-interface Vlan60
+ passive-interface Vlan70
+ passive-interface Vlan99
+ network 10.0.50.24 0.0.0.3 area 0
+ network 10.0.50.36 0.0.0.3 area 0
+ network 10.100.60.0 0.0.0.255 area 0
+ network 10.100.70.0 0.0.0.255 area 0
+ network 10.100.99.0 0.0.0.255 area 0
+ network 192.168.10.0 0.0.0.255 area 0
+ network 192.168.11.0 0.0.0.255 area 0
+!
+router ospf 2 vrf DMZ
+ router-id 33.33.33.33
+ area 1 authentication message-digest
+ passive-interface Vlan51
+ network 10.0.50.4 0.0.0.3 area 1
+ network 10.0.50.16 0.0.0.3 area 1
+ network 10.100.51.0 0.0.0.255 area 1
+ network 10.100.52.0 0.0.0.255 area 1
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+ip ssh version 2
+!
+ip access-list extended Allow_VLAN11
+ permit ip 192.168.11.0 0.0.0.255 10.100.70.0 0.0.0.255
+ deny   ip any 10.100.70.0 0.0.0.255
+ permit ip any any
+ip access-list extended AutoQos-4.0-wlan-Acl-Bulk-Data
+ permit tcp any any eq 22
+ permit tcp any any eq 465
+ permit tcp any any eq 143
+ permit tcp any any eq 993
+ permit tcp any any eq 995
+ permit tcp any any eq 1914
+ permit tcp any any eq ftp
+ permit tcp any any eq ftp-data
+ permit tcp any any eq smtp
+ permit tcp any any eq pop3
+ip access-list extended AutoQos-4.0-wlan-Acl-MultiEnhanced-Conf
+ permit udp any any range 16384 32767
+ permit tcp any any range 50000 59999
+ip access-list extended AutoQos-4.0-wlan-Acl-Scavanger
+ permit tcp any any range 2300 2400
+ permit udp any any range 2300 2400
+ permit tcp any any range 6881 6999
+ permit tcp any any range 28800 29100
+ permit tcp any any eq 1214
+ permit udp any any eq 1214
+ permit tcp any any eq 3689
+ permit udp any any eq 3689
+ permit tcp any any eq 11999
+ip access-list extended AutoQos-4.0-wlan-Acl-Signaling
+ permit tcp any any range 2000 2002
+ permit tcp any any range 5060 5061
+ permit udp any any range 5060 5061
+ip access-list extended AutoQos-4.0-wlan-Acl-Transactional-Data
+ permit tcp any any eq 443
+ permit tcp any any eq 1521
+ permit udp any any eq 1521
+ permit tcp any any eq 1526
+ permit udp any any eq 1526
+ permit tcp any any eq 1575
+ permit udp any any eq 1575
+ permit tcp any any eq 1630
+ permit udp any any eq 1630
+ permit tcp any any eq 1527
+ permit tcp any any eq 6200
+ permit tcp any any eq 3389
+ permit tcp any any eq 5985
+ permit tcp any any eq 8080
+!
+ip sla 1
+ icmp-echo 8.8.8.8 source-interface Vlan10
+ vrf Klient
+ threshold 300
+ timeout 600
+ frequency 3
+ip sla schedule 1 life forever start-time now
+logging trap warnings
+logging host 10.100.60.15 vrf Klient transport udp port 2002
+logging host 10.100.60.15 vrf DMZ transport udp port 2002
+!
+!
+!
+control-plane
+ service-policy input system-cpp-policy
+!
+!
+no vstack
+banner exec ^CCNo access without permission!^C
+banner login ^CCNo access without permission!^C
+banner motd ^CCNo access without permission!^C
+!
+line con 0
+ logging synchronous
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ exec-timeout 0 0
+ logging synchronous
+ login local
+ transport input ssh
+line vty 5 14
+ exec-timeout 0 0
+ logging synchronous
+ login local
+ transport input ssh
+line vty 15
+ login
+!
+ntp server vrf Klient 10.0.50.25 minpoll 10 prefer
+ntp server vrf Klient 10.0.50.33 minpoll 10
+!
+wsma agent exec
+!
+wsma agent config
+!
+wsma agent filesys
+!
+wsma agent notify
+!
+!
+ap dot11 airtime-fairness policy-name Default 0
+ap group default-group
+ap hyperlocation ble-beacon 0
+ap hyperlocation ble-beacon 1
+ap hyperlocation ble-beacon 2
+ap hyperlocation ble-beacon 3
+ap hyperlocation ble-beacon 4
+end

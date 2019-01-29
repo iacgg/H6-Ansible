@@ -1,0 +1,41 @@
+---
+# Sætter at syslog servern er server, og ikke en klient
+syslog_ng_server: true
+
+# Definere hvorfra hvortil og hvilen filter syslog-ng skal filtere logs på den modtager
+syslog_ng_log:
+  - desc: Sender syslog til den korrekt placering på syslog serveren som ikke har facility
+    sources:
+      - src_remote
+    filters:
+      - f_syslog
+    destinations:
+      - d_remote_syslog
+  - desc: Sender dpkg logs til den korrekt placering på syslog serveren, opdelt på facility
+    sources:
+      - src_remote
+    filters:
+      - f_dpkg
+    destinations:
+      - d_remote_dpkg
+  - desc: Sender web access logs til den korrekt placering på syslog serveren, opdelt på facility
+    sources:
+      - src_remote
+    filters:
+      - f_web_access
+    destinations:
+      - d_remote_web_access
+  - desc: Send web error logs til den korrekt placering på syslog serveren, opdelt på facility
+    sources:
+      - src_remote
+    filters:
+      - f_web_error
+    destinations:
+      - d_remote_web_error
+  - desc: Sender haproxy logs til den korrekt placering på syslog serveren, opdelt på facility
+    sources:
+      - src_remote
+    filters:
+      - f_haproxy
+    destinations:
+      - d_remote_haproxy

@@ -1,0 +1,11 @@
+---
+- name: Henter wp cli
+  get_url:
+    url: https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+    dest: /usr/bin/wp
+    mode: 0755
+
+- name: Henter mysqlclient da wp cli skal bruge det
+  apt:
+    pkg: mysql-client-core-5.7
+    state: present

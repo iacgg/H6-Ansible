@@ -1,0 +1,18 @@
+---
+- name: reload icinga2
+  systemd:
+    name: "icinga2"
+    state: reloaded
+    enabled: yes
+
+- name: restart icinga2
+  systemd:
+    name: "icinga2"
+    state: restarted
+    enabled: yes
+
+- name: restart apache2
+  systemd:
+    name: "apache2"
+    state: restarted
+    enabled: yes

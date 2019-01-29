@@ -1,0 +1,40 @@
+---
+- name: sikre at shared folder til hjemmesiden findes
+  run_once: true
+  file:
+    path: "/mnt/dfs/{{ item.name }}"
+    owner: www-data
+    group: www-data
+    state: directory
+  with_list: "{{ web_info }}"
+  tags:
+    - web
+
+- name: tjekker om uploads er et symlink
+  stat:
+    path: "/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}/wp-content/uploads"
+  with_list: "{{ web_info }}"
+  register: uploads
+  tags:
+    - web
+
+- name: sletter uploads mappen, hvis det er en mappe, og ikke et symlink
+  file:
+    path: "{{ item.stat.path }}"
+    state: absent
+  with_items: "{{ uploads.results }}"
+  when:
+    - item.stat.isdir is defined
+    - item.stat.isdir
+  tags:
+    - web
+
+- name: sikre at symlink findes i releases
+  file:
+    src: "/mnt/dfs/{{ item.name }}"
+    dest: "/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}/wp-content/uploads"
+    state: link
+    force: true
+  with_list: "{{ web_info }}"
+  tags:
+    - web

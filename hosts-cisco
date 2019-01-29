@@ -1,0 +1,23 @@
+# Definere switch og deres managment IP
+[switch]
+DLS1 ansible_host=10.100.99.2
+DLS2 ansible_host=10.100.99.3
+ALS1 ansible_host=10.100.99.4 
+ALS2 ansible_host=10.100.99.5
+
+[switch:vars]
+# Alle kommandoer her sætter variabler for alle switche
+# Sætter hvordan der skal connectes, her bruges network_cli
+ansible_connection=network_cli
+# Sætter hvilket OS switcne har. Så modulet der bruges kan bruge korrekt variable
+ansible_network_os=ios
+# Sætter ssh username
+ansible_user=BACKUP
+# Sætter ssh passord
+ansible_ssh_pass=101Password
+# Sætter privilage escalation til true
+ansible_become=yes
+# Sætter metoden til at escalate til "enable"
+ansible_become_method=enable
+# Sætter hvad password der skal bruges til privilage escalation
+ansible_become_password=101Password

@@ -1,0 +1,19 @@
+# core.yml
+---
+# I denne playbook includeres alt der er fælles for alle server, syslog udrulles først. 
+# For at få syslog fra de andre hosts med til syslog serveren
+- hosts: syslog
+  roles:
+    - role: lvm
+    - role: hosts
+    - role: apt_cache_update
+    - role: users
+    - role: syslog-ng
+
+- hosts: all:!syslog
+  roles:
+    - role: lvm
+    - role: hosts
+    - role: apt_cache_update
+    - role: users
+    - role: syslog-ng

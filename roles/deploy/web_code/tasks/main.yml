@@ -1,0 +1,105 @@
+---
+- name: sikre at website mapperne findes
+  block:
+    - file:
+        dest: "/var/www/virtual/{{ item.name }}"
+        state: directory
+      with_list: "{{ web_info }}"
+    - file:
+        dest: "/var/www/virtual/{{ item.name }}/releases"
+        state: directory
+      with_list: "{{ web_info }}"
+  tags:
+    - web
+    
+- name: cloner kode ned
+  git:
+    repo: "{{ item.repo }}"
+    dest: "/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}"
+    clone: true
+    update: true
+  with_list: "{{ web_info }}"
+  tags:
+    - web
+
+- name: sikre at permissions er korrekte
+  file:
+    path: "/var/www/virtual/{{ item.name }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: true
+  with_list: "{{ web_info }}"
+  tags:
+    - web
+
+- name: kører bootstrap wp config
+  ignore_errors: true
+  shell: "wp config list --allow-root --path=/var/www/virtual/{{ item[0].name }}/releases/{{ ansible_date_time.epoch }} || wp core config --allow-root --path=/var/www/virtual/{{ item[0].name }}/releases/{{ ansible_date_time.epoch }} --dbhost=mysql.101.loc --dbname={{ item[1].database }} --dbuser={{ item[1].username }} --dbpass={{ item[1].password }}"
+  with_together:
+    - "{{ web_info }}"
+    - "{{ mysql_info }}"
+  tags:
+    - web
+
+- name: opretter local wp config fil
+  ignore_errors: true
+  shell: "wp config list --allow-root --path=/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }} && wp core install --allow-root --path=/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }} --url={{ item.domains[0] }} --title='{{ item.titel | default('Site titel') }}' --admin_name={{ item.name }}_admin --admin_password={{ item.name }}_password --admin_email=admin@{{ item.name }}.dk"
+  with_list: "{{ web_info }}"
+  tags:
+    - web
+
+
+- name: erstattter http med https i databasen
+  shell: "wp search-replace 'http://{{ item.domains[0] }}' 'https://{{ item.domains[0] }}' --skip-columns=guid  --allow-root --path=/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}"
+  with_list: "{{ web_info }}"
+  when:
+    - item.https is defined 
+    - item.https
+  tags:
+    - web
+
+- name: sikre at .htaccess er korrekt
+  copy:
+    dest: "/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}/.htaccess"
+    content: |
+      # BEGIN WordPress
+      <IfModule mod_rewrite.c>
+      RewriteEngine On
+      RewriteBase /
+      RewriteRule ^index\.php$ - [L]
+      RewriteCond %{REQUEST_FILENAME} !-f
+      RewriteCond %{REQUEST_FILENAME} !-d
+      RewriteRule . /index.php [L]
+      </IfModule>
+      # END WordPress
+  with_list: "{{ web_info }}"
+  tags:
+    - web
+
+- name: sikre at https er enabled i wp config
+  lineinfile:
+    path: "/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}/wp-config.php"
+    line: |
+        define('FORCE_SSL_ADMIN', true);
+        if ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+         $_SERVER['HTTPS']='on';
+    insertafter: '^\<\?php'
+    state: present
+  with_list: "{{ web_info }}"
+  when:
+    - item.https is defined 
+    - item.https
+  tags:
+    - web
+
+- name: sikre at permissions er korrekte
+  file:
+    path: "/var/www/virtual/{{ item.name }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: true
+  with_list: "{{ web_info }}"
+  tags:
+    - web

@@ -1,0 +1,109 @@
+---
+# Bruges til keepalived for hvilken VIP adresser HAProxy skal have
+vrrp_groups:
+  vg1:
+      private:
+        vip: "{{ vrrp_private_vip }}"
+        range: "{{ vrrp_private_vip }}/24"
+        id: 101
+        iface: "eth0"
+        scripts: "chk_haproxy"
+
+# Definere et script keepalived bruger til at tjekke status for HAProxy
+vrrp_scripts:
+  chk_haproxy:
+    scripts: "/usr/bin/killall -0 haproxy"
+    interval: 2
+
+# Config fil version
+haproxy_config_version: v2
+
+# Sætter at domæner der forespørges skal have en not found
+haproxy_notfound_lists: true
+
+# Laver en connection mellem frontend of hvilken backend og options den skal benytte
+haproxy_frontend_mapping:
+  - frontend: public-web
+    backend:
+      - name: web
+    force_www_key_name:
+      - force_www
+    force_https_key_name:
+      - https
+    del_header_key_name:
+      - default
+    restricted_access_key_name:
+      - internal
+  - frontend: mysql
+    backend:
+      - name: mysql
+
+# Definere hvilken frontends HAProxy skal have
+haproxy_frontends:
+  - name: public-web
+    default_backend: notfound
+    bindings:
+      - type: http
+        interface: '*'
+      - type: https
+        interface: '*'
+  - name: mysql
+    default_backend: mysql
+    bindings:
+      - port: 3306
+    logging: false
+    default_web_config: false
+    network_allowed_enabled: false
+    set_default_headers: false
+    mode: tcp
+    options:
+      - tcplog
+    timeout: "client 1800s"
+
+
+# Definere et backend for MySQL
+haproxy_backend_group_map:
+  - name: web
+    balance: source
+  - name: mysql
+    port: 3306
+    server_check: check port 9200 inter 12000 rise 3 fall 3
+    check_options: false
+    mode: tcp
+    balance: leastconn
+
+# Definere hvilken domæner der skal til web clusteret
+haproxy_backend_domains:
+  web:
+    - 101.dk
+    - intranet.101.dk
+    - kunde.101.dk
+
+# Definere hvilken domæner der skal forces til www.
+haproxy_force_www_lists:
+  force_www:
+    - domains:
+        - 
+
+# Definere hvilen domæner der skal forces til https
+haproxy_force_https_lists:
+  https:
+    - domains:
+      - 101.dk
+      - intranet.101.dk
+      - kunde.101.dk
+
+# Bruges til at slette evt headers i HAProxy
+haproxy_del_header_lists:
+  default:
+    - domains:
+        - 
+      headers:
+        - needs_filling
+
+# Definere hvilken domæner der kun skal kunnes nås indefra
+haproxy_restricted_access_lists:
+  internal:
+    - domains:
+        - intranet.
+      host_match_method: beg

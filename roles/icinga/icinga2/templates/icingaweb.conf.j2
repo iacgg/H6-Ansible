@@ -1,0 +1,28 @@
+# {{ ansible_managed }}
+<VirtualHost *:80>
+    ServerName {{ icingaweb2_fqdn }}    
+    RewriteEngine on    
+    RewriteCond %{REQUEST_URI} ^/$
+    RewriteRule ^ http://%{SERVER_NAME}/icingaweb2/ [END,QSA,R=permanent]
+    ServerAdmin admin@101.dk
+    Alias /icingaweb2 "/usr/share/icingaweb2/public"
+    ErrorLog ${APACHE_LOG_DIR}/icingaweb2_error.log
+    CustomLog ${APACHE_LOG_DIR}/icingaweb2_access.log combined
+
+    <Directory "/usr/share/icingaweb2/public">        
+        Options SymLinksIfOwnerMatch        
+        AllowOverride None
+        DirectoryIndex index.php
+        <IfModule mod_authz_core.c>
+            <RequireAll>
+                Require all granted
+            </RequireAll>
+        </IfModule>
+        <IfModule !mod_authz_core.c>
+            Order allow,deny
+            Allow from all
+        </IfModule>
+        SetEnv ICINGAWEB_CONFIGDIR "/etc/icingaweb2"
+        EnableSendfile Off
+    </Directory>
+</VirtualHost>

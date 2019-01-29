@@ -1,0 +1,99 @@
+
+########################
+# Custom Destinations
+########################
+
+{%- set destinations_lists = syslog_ng_log | json_query('[*].destinations') %}
+{%- set destination_all = [] -%}
+
+{%- for destinations in destinations_lists %}
+{%- for dest in destinations %}
+{{ destination_all.append(dest) }}
+{% endfor -%}
+{% endfor -%}
+
+{%- for destination in destination_all|unique %}
+
+{%- if destination == "d_syslog_server" %}
+destination d_syslog_server {
+  network("syslog1.101.loc" port(514) transport("udp")
+  );
+};
+
+{% endif -%}
+
+{%- if destination == "d_remote_syslog" %}
+destination d_remote_syslog {
+  file ("/logdata/hosts/$FULLHOST/$YEAR-$MONTH-$DAY/syslog/syslog.log-$HOUR.00"
+  perm(0644)
+  dir_perm(0755)
+  create_dirs(yes)
+ 	log_fifo_size(25000)
+  );
+};
+
+{% endif -%}
+
+{%- if destination == "d_remote_dpkg" %}
+destination d_remote_dpkg {
+  file ("/logdata/hosts/$FULLHOST/$YEAR-$MONTH-$DAY/dpkg/dpkg.log-$HOUR.00"
+  perm(0644)
+  dir_perm(0755)
+  create_dirs(yes)
+ 	log_fifo_size(25000)
+  );
+};
+
+{% endif -%}
+
+{%- if destination == "d_remote_web_access" %}
+destination d_remote_web_access {
+  file ("/logdata/hosts/$FULLHOST/$YEAR-$MONTH-$DAY/access/access.log-$HOUR.00"
+  perm(0644)
+  dir_perm(0755)
+  create_dirs(yes)
+ 	log_fifo_size(25000)
+  );
+};
+
+{% endif -%}
+
+{%- if destination == "d_remote_web_error" %}
+destination d_remote_web_error {
+  file ("/logdata/hosts/$FULLHOST/$YEAR-$MONTH-$DAY/error/error.log-$HOUR.00"
+  perm(0644)
+  dir_perm(0755)
+  create_dirs(yes)
+ 	log_fifo_size(25000)
+  );
+};
+
+{% endif -%}
+
+{%- if destination == "d_remote_haproxy" %}
+destination d_remote_haproxy {
+  file ("/logdata/hosts/$FULLHOST/$YEAR-$MONTH-$DAY/haproxy/haproxy.log-$HOUR.00"
+  perm(0644)
+  dir_perm(0755)
+  create_dirs(yes)
+ 	log_fifo_size(25000)
+  );
+};
+
+{% endif -%}
+
+{%- if destination == "d_haproxy_log_file" %}
+destination d_haproxy_log_file {
+  file("{{ haproxy_log_path }}/haproxy.log");
+};
+
+{% endif -%}
+
+{%- if destination == "d_haproxy_log_file_errors" %}
+destination d_haproxy_log_file_errors {
+  file("{{ haproxy_log_path }}/haproxy-errors.log");
+};
+
+{% endif -%}
+
+{% endfor -%}

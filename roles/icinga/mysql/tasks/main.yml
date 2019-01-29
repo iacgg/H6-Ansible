@@ -1,0 +1,52 @@
+
+- name: Sikre at mysql og afhænigheder er intalleret
+  apt:
+    #name: '{{ item }}'
+    name: 
+    - python-pymysql
+    - python3-pymysql
+    - mysql-server-{{ mysql_server_version | default('5.7') }}
+    - mysql-client
+    - python-mysqldb
+    update_cache: yes
+    state: present
+
+- name: Sætter MySQL root kodeordet
+  mysql_user:
+    name: root
+    password: '{{ mysql_root_password }}'
+    login_unix_socket: "/var/run/mysqld/mysqld.sock"
+  when: not ansible_check_mode
+  register: root_password
+
+- name: Updateret .my.cnf for root brugeren
+  copy:
+    dest: /root/.my.cnf
+    content: |
+      [client]
+      user=root
+      password= "{{ mysql_root_password }}"
+    owner: root
+    group: root
+    mode: 0600
+  when:  root_password is changed
+
+- name: Sikre at root brugeren kun må bruges fra localhost
+  mysql_user:
+    user: root
+    password: '{{ mysql_root_password }}'
+    host: '{{ item }}'
+    login_password: '{{ mysql_root_password }}'
+    login_user: root
+  with_items:
+    - 127.0.0.1
+    - localhost
+    - ::1
+  when: not ansible_check_mode
+
+- name: Sikre at mysql starter ved boot, og er startet
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+  when: not ansible_check_mode

@@ -1,0 +1,28 @@
+{% for frontend_map in haproxy_frontend_mapping  %}
+{% if frontend_map.frontend == frontend.name  %}
+{% if frontend_map.restricted_access_key_name is defined %}
+
+# "modules/restricted_access.j2"
+{% for restricted_access_list in frontend_map.restricted_access_key_name  %}
+{% for values in haproxy_restricted_access_lists[restricted_access_list] %}
+
+    acl restricted_access_{{ restricted_access_list }} hdr_{{ values.host_match_method|default('end') }}(host) -i -f {{ haproxy_base_path }}/restricted_access/{{ restricted_access_list }}.lst
+{% if values.url is defined %}
+{% for url in values.url %}
+    acl restricted_url_{{ restricted_access_list }} url_{{ values.url_match_method|default('sub') }} -i "{{ url }}"
+{% endfor %}
+{% endif %}
+{% if values.path is defined %}
+{% for path in values.path %}
+    acl restricted_path_{{ restricted_access_list }} path_{{ values.path_match_method|default('sub') }} -i "{{ path }}"
+{% endfor %}
+{% endif %}
+
+    http-request deny if restricted_access_{{ restricted_access_list }}{% if values.url is defined %} restricted_url_{{ restricted_access_list }}{% endif %} {% if values.path is defined %}restricted_path_{{ restricted_access_list }} {% endif %}!network_allowed
+
+{% endfor %}
+{% endfor %}
+
+{% endif %}
+{% endif %}
+{% endfor %}

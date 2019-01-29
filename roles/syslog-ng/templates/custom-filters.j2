@@ -1,0 +1,71 @@
+########################
+# Custom Filters
+########################
+
+{%- set filters_lists = syslog_ng_log | json_query('[*].filters') %}
+{%- set filter_all = [] -%}
+
+{%- for filters in filters_lists %}
+{%- for src in filters %}
+{{ filter_all.append(src) }}
+{% endfor -%}
+{% endfor -%}
+
+{%- for filter in filter_all|unique %}
+
+{%- if filter == "f_haproxy_default_messages" %}
+filter f_haproxy_default_messages {
+  facility(local0);
+};
+{% endif -%}
+
+{%- if filter == "f_syslog" %}
+filter f_syslog {
+  not facility(
+    authpriv,
+    mail,
+    ftp,
+    cron,
+    local1,
+    local2,
+    local3,
+    local4,
+    local5,
+    local6
+    );
+};
+{% endif -%}
+
+{%- if filter == "f_dpkg" %}
+filter f_dpkg {
+  facility(
+    local1
+  );
+};
+{% endif -%}
+
+{%- if filter == "f_web_access" %}
+filter f_web_access {
+  facility(
+    local2
+  );
+};
+{% endif -%}
+
+{%- if filter == "f_web_error" %}
+filter f_web_error {
+  facility(
+    local3
+  );
+};
+{% endif -%}
+
+{%- if filter == "f_haproxy" %}
+filter f_haproxy {
+  facility(
+    local4
+  );
+};
+{% endif -%}
+
+{% endfor -%}

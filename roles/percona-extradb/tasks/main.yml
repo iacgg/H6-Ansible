@@ -1,0 +1,164 @@
+---
+- name: Sikre at percona deb er tilstede
+  apt:
+    deb: "https://repo.percona.com/apt/percona-release_0.1-10.{{ ansible_distribution_release }}_all.deb"
+    state: present
+  register: percona_deb
+  tags:
+    - mysql
+    - percona
+
+- name: Update cache
+  apt:
+    update_cache: yes
+  when: percona_deb is changed 
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at apparmor er afinstalleret
+  package:
+    name: apparmor
+    state: absent 
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at xinetd er installeret
+  package:
+    name: xinetd
+    state: present 
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at percona afhængingheder er installeret
+  apt:
+    pkg:
+      - python-pymysql
+      - python3-pymysql
+    state: present
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at percona extradb er installeret
+  apt:
+    pkg: "percona-xtradb-cluster-full-57"
+    state: present
+    update_cache: yes
+  register: percona_install
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at percona conf bliver læst
+  lineinfile:
+    path: "/etc/mysql/my.cnf"
+    regexp: "^!include /etc/mysql/percona.cnf"
+    line: "!include /etc/mysql/percona.cnf"
+    insertafter: "^includedir.+"
+    state: present
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at percona conf er updateret
+  template:
+    src: "percona.cnf.j2"
+    dest: "/etc/mysql/percona.cnf"
+  register: percona_config
+  tags:
+    - mysql
+    - percona
+
+- name: Sætter root password
+  mysql_user: 
+    name: root
+    host: "localhost"
+    password: "{{ percona_root_password }}"
+    state: present
+    login_unix_socket: "/var/run/mysqld/mysqld.sock"
+  when: percona_install is changed
+  register: set_root_password
+  tags:
+    - mysql
+    - percona
+
+- name: Updateret .my.cnf for root brugeren
+  copy:
+    dest: /root/.my.cnf
+    content: |
+      [client]
+      user=root
+      password= "{{ percona_root_password }}"
+    owner: root
+    group: root
+    mode: 0600
+  when:  set_root_password is changed
+
+- name: stopper my sql service vis den lige er installeret
+  service:
+    name: "mysql"
+    state: stopped
+    enabled: "yes"
+  when: percona_install is changed
+  tags:
+    - mysql
+    - percona
+
+- name: Start mysql services med bootstraping
+  shell: "/etc/init.d/mysql bootstrap-pxc"
+  when: "percona_config is changed and percona_master == inventory_hostname"
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at pytgn module er installeret til mysql
+  package:
+    name: "python-mysqldb"
+    state: present
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at replikation bruger bliver oprettet
+  mysql_user:
+    name: "{{ percona_user }}"
+    password: "{{ percona_password }}"
+    priv: "*.*:RELOAD,LOCK TABLES,PROCESS,REPLICATION CLIENT"
+    login_user: root
+    login_password: "{{ percona_root_password }}"
+    state: present
+  when: "percona_config is changed and percona_master == inventory_hostname"
+  tags:
+    - mysql
+    - percona
+
+- name: Start mysql services
+  service:
+    name: "mysql"
+    state: started
+  when: "percona_master != inventory_hostname"
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at mysqlchk er klart til HAProxy kan tjekke den
+  lineinfile:
+    path: "/etc/services"
+    line: "mysqlchk 9200/tcp  # mysqlchk"
+    state: present
+  register: services
+  tags:
+    - mysql
+    - percona
+
+- name: Sikre at xinetd er staret
+  service:
+    name: "xinetd"
+    state: restarted
+  when: services is changed
+  tags:
+    - mysql
+    - percona

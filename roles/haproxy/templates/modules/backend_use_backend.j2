@@ -1,0 +1,11 @@
+{% for frontend_map in haproxy_frontend_mapping  %}
+{% if frontend_map.frontend == frontend.name  %}
+
+# "modules/backend_use_backend.j2"
+{% for backend in frontend_map.backend  %}
+    use_backend b_{{ backend['name'] }} if {{ backend['name'] }}_list
+{% endfor %}
+
+{% endif %}
+{% endfor %}
+

@@ -1,0 +1,28 @@
+---
+- name: Sikre at keepalived og afhængiheder er installeret
+  package:
+    name: "{{ item }}"
+  with_items:
+    - "keepalived"
+    - "psmisc"
+  register: keepalived_config
+  tags:
+    - keepalived
+
+- name: Sikre at keepalived konfiguration er updateret
+  template:
+    src: "keepalived.conf.j2"
+    dest: "/etc/keepalived/keepalived.conf"
+  register: keepalived_config
+  tags:
+    - keepalived
+    - keepalived-config
+
+- name: Sikre at keepalived er genstartet
+  service:
+    name: "keepalived"
+    state: restarted
+  when: keepalived_config is changed
+  tags:
+    - keepalived
+    - keepalived-config

@@ -1,0 +1,34 @@
+---
+- name: Sikre at syslog-ng er installeret
+  apt:
+    name: syslog-ng-core
+    state: present
+  notify:
+    - start syslog-ng
+  tags:
+    - syslog-ng
+
+- name: Sikre at syslog-ng er config er updateret
+  template:
+    src: "client.j2"
+    dest: "{{ syslog_ng_config_file }}"
+    owner: "{{ syslog_ng_group }}"
+    group: "{{ syslog_ng_group }}"
+  when: "syslog_ng_conf_d_enable == false"
+  notify:
+    - reload syslog-ng
+  tags:
+    - syslog-ng
+
+- name: Sikre at syslog-ng conf.d underfilerne er sync og up to date
+  template:
+    src: "{{ item }}"
+    dest: "{{ syslog_ng_config_dir }}/conf.d/{{ item | basename | regex_replace('.j2', '.conf') }}"
+    owner: "{{ syslog_ng_group }}"
+    group: "{{ syslog_ng_group }}"
+  when: "syslog_ng_conf_d_enable"
+  with_items: "{{ syslog_ng_template_list }}"
+  notify:
+    - reload syslog-ng
+  tags:
+    - syslog-ng

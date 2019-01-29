@@ -1,0 +1,35 @@
+; {{ ansible_managed }}
+[global]
+error_log = syslog
+syslog.ident = php-fpm-{{ item.name }}
+
+[{{ item.name }}]
+user = www-data
+group = www-data
+
+listen = /run/php/{{ item.name }}-php7.2-fpm.sock
+
+listen.owner = www-data
+listen.group = www-data
+
+{% if item.fpm_settings is defined %}
+{% for option in item.fpm_settings %}
+pm = {{ option.mode|default('dynamic') }}
+pm.max_children = {{ option.max_children|default('10') }}
+pm.start_servers = {{ option.start_servers|default('5') }}
+pm.min_spare_servers = {{ option.min_spare_servers|default('3') }}
+pm.max_spare_servers = {{ option.max_spare_servers|default('5') }}
+{% endfor %}
+{% else %}
+pm = dynamic
+pm.max_children = 10
+pm.start_servers = 5
+pm.min_spare_servers = 3
+pm.max_spare_servers = 5
+{% endif %}
+
+{% if item.php_settings is defined %}
+{% for option_name, option in item.php_settings.items() %}
+php_admin_value[{{ option_name }}] = {{ option }}
+{% endfor %}
+{% endif %}

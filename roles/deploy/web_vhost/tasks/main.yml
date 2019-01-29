@@ -1,0 +1,20 @@
+---
+- name: sikre at vhosts conf findes
+  template:
+    src: vhost.j2
+    dest: "/var/www/vhosts/{{ item.name }}.conf"
+    owner: www-data
+    group: www-data
+    mode: 0664
+  register: vhosts
+  with_items: "{{ web_info }}"
+  tags:
+    - web
+ 
+- name: genstarter apache2
+  service:
+    name: "apache2"
+    state: restarted
+  when: vhosts is changed
+  tags:
+    - web

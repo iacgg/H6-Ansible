@@ -1,0 +1,110 @@
+---
+- name: Sikre at apache2 er installeret
+  apt:
+    pkg:
+      - "apache2"
+    state: present
+  tags:
+    - apache2
+
+- name: Sikre config og enabled er synced
+  synchronize:
+    src: "{{ item }}/"
+    dest: "/etc/apache2/{{ item }}"
+    owner: no
+    group: no
+  with_items:
+    - "conf-available"
+    - "conf-enabled"
+  notify:
+    - "restart apache2"
+  tags:
+    - apache2
+    - apache2-config
+
+- name: Sikre /var/www/vhosts findes
+  file:
+    state: "directory"
+    path: "/var/www/vhosts"
+    owner: "www-data"
+    group: "www-data"
+  tags:
+    - apache2
+
+- name: Sikre apache modules er loaded
+  apache2_module:
+    name: "{{ item }}"
+  with_items:
+    - expires
+    - headers
+    - rewrite
+    - proxy
+    - proxy_http
+    - proxy_fcgi
+    - authz_groupfile
+    - env
+    - dir
+    - mime
+  notify:
+    - "restart apache2"
+  tags:
+    - apache2
+    - apache2-config
+
+- name: Sikre at /var/www/html findes
+  file:
+    path: "/var/www/html"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+  tags:
+    - apache2
+
+- name: Sikre /var/www/virtual findes
+  file:
+    path: "/var/www/virtual"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+  tags:
+    - apache2
+
+- name: Sikre /var/www/vhosts findes
+  file:
+    path: "/var/www/vhosts"
+    state: directory
+    owner: "www-data"
+    group: "www-data"
+  tags:
+    - apache2
+
+- name: Sikre default index.html findes
+  template:
+    src: "www/index.html.j2"
+    dest: "/var/www/html/index.html"
+  tags:
+    - apache2
+    - apache2-config
+
+- name: Sikre at server signature er disabled part 1
+  lineinfile:
+    dest: /etc/apache2/conf-available/security.conf
+    state: absent
+    regexp: '^ServerSignature On'
+  notify:
+    - "restart apache2"
+  tags:
+    - apache2
+    - apache2-config
+
+- name: Ensures server signature is disabled part 2
+  lineinfile:
+    dest: /etc/apache2/conf-available/security.conf
+    state: present
+    regexp: '^ServerSignature Off'
+    line: "ServerSignature Off" 
+  notify:
+    - "restart apache2"
+  tags:
+    - apache2
+    - apache2-config

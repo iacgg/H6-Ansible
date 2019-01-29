@@ -1,0 +1,20 @@
+
+#"modules/defaults.j2"
+defaults
+    mode http
+    log global
+    option splice-auto
+    option http-keep-alive
+    option http-server-close
+    option redispatch
+    option log-separate-errors
+    retries 3
+    timeout http-request    {{ haproxy_default_http_request }}
+    timeout connect         30s
+    timeout http-keep-alive 1s
+    timeout check           30s
+    timeout client          60s
+    timeout server          60s
+    timeout queue           30s
+    balance roundrobin
+

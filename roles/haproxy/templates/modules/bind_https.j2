@@ -1,0 +1,1 @@
+:443 ssl crt {{ haproxy_base_path }}/letsencrypt.certs.d {% if binding.additional_tls_ciphers is defined %} {{ binding.additional_tls_ciphers }} {% endif %}{% if binding.additional_tls_protocol is defined %} {{ binding.additional_tls_protocol }} {% endif %}alpn h2,http/1.1

@@ -1,0 +1,29 @@
+/**
+ * The example user 'icingaadmin' and the example
+ * group 'icingaadmins'.
+ */
+
+object User "{{ icingaweb_adminuser_name }}" {
+  import "generic-user"
+  display_name = "Icinga 2 Admin"
+  groups = [ "icingaadmins" ]
+  email = "{{ icingaweb_adminuser_email }}"
+}
+
+{% for userproperties in users.items() %}
+object User "{{ userproperties[0] }}" {
+  import "generic-user"
+  display_name = "{{ userproperties[1]['name'] }}"
+  groups = [ "icingaadmins" ] 
+  {% if userproperties[1]['email'] is defined %}
+  email = "{{ userproperties[1]['email'] }}"
+  {% endif %} 
+}
+{% endfor -%} 
+
+object UserGroup "icingaadmins" {
+  display_name = "Icinga 2 Admin Group"
+{% for userproperties in users.items() %}
+  assign where user.name == "{{ userproperties[0] }}"  
+{% endfor -%} 
+}

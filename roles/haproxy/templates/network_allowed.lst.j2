@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+# Allowed networks, to see more headers and stuff
+# Syntax: A.B.C.D/PREFIX
+
+{% if haproxy_internal_allowed_networks is defined %}
+# Internal Networks
+{% for networks in haproxy_internal_allowed_networks %}
+{{ networks }}
+{% endfor %}
+{% endif %}

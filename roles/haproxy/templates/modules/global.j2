@@ -1,0 +1,29 @@
+{% set haproxy_nbprocs = ansible_processor_vcpus %}
+
+# "modules/global.j2"
+global
+    daemon
+    maxconn {{ haproxy_global_maxconn }}
+{% if haproxy_global_ulimit_n != false %}
+    ulimit-n {{ haproxy_global_ulimit_n }}
+{% endif %}
+    {{ haproxy_global_log }}
+    tune.ssl.maxrecord 1370 # lower record size to improve TTFB
+    tune.ssl.default-dh-param 2048 # # increase diffie hellman params
+    tune.ssl.cachesize {{ haproxy_global_tune_ssl_cachesize }}
+    tune.ssl.lifetime {{ haproxy_global_tune_ssl_lifetime }}
+    ssl-default-bind-options {{ haproxy_default_tls_procotols }}
+    ssl-default-bind-ciphers {{ haproxy_default_tls_ciphers }}
+    chroot /var/lib/haproxy
+{% if haproxy_multiple_cores %}
+    nbproc {{ haproxy_nbprocs }}
+{% for n in range(0, haproxy_nbprocs) %}
+    stats socket {{ haproxy_stats_path }}/admin{{ n+1 }}.sock level admin process {{ n+1 }}
+{% endfor %}
+{% for n in range(0, haproxy_nbprocs) %}
+    cpu-map {{ n+1 }} {{ n }}
+{% endfor %}
+{% else %}
+    stats socket {{ haproxy_stats_path }}/haproxy.stats level admin
+{% endif %}
+

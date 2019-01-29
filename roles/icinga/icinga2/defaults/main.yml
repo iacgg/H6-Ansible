@@ -1,0 +1,54 @@
+---
+icingaweb2_fqdn: "monitoring.101.loc"
+
+
+# IcingaWeb2 Database details (user auth)
+icingaweb2_user_ressource_name: icingaweb_db
+icingaweb2_user_backend_type: db
+icingaweb_userdb_dbname: icingaweb2
+icingaweb_userdb_host: localhost
+icingaweb_userdb_username: icingaweb2
+
+# Where the user db client connects to the database from
+icingaweb_userdb_clientip: localhost
+icingaweb_userdb_userpassword: 1234Test
+
+# MySQL password for the  - if used with mysql an external server, DB owner should be enough (not checked though!)
+mysql_root_password: Test1234
+
+# IcingaWeb2 administrator User (note all operation users are also admins)
+icingaweb_adminuser_name: admin
+icingaweb_adminuser_email: "blackhole@101.dk"
+icingaweb_adminuser_password: testtest
+
+# Monitor Database connention details
+icinga2_monitor_ressource_name: icinga_ido
+icinga2_monitor_backend_type: db
+icinga2_monitordb_host: localhost
+icinga2_monitordb_dbname: icinga2
+icinga2_monitordb_username: icinga2
+
+# Where the monitor db client connects to the database from
+icinga2_monitordb_clientip: localhost
+# Monitor Database User details
+icinga2_monitordb_userpassword: mon12345
+
+# API User details
+icinga2_api_user_name: apiuser
+icinga2_api_user_password: api12345
+
+# SSL options. Default values assume the use to the self-signed-certificate role
+#icingaweb2_ssl_enabled: true
+icingaweb2_ssl_public_key_path: "{{ self_signed_certificate_public_key_path }}"
+icingaweb2_ssl_private_key_path: "{{ self_signed_certificate_private_key_path }}"
+
+# Notification options
+icinga2_mailnotification_enabled: true
+
+icinga2_mail_service_alert_states:
+  - 'Critical'
+  - 'OK'
+  - 'Unknown'
+
+# NYI:
+icinga2_sla: '24x7'

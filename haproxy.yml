@@ -1,0 +1,6 @@
+---
+# Ud ruller keepalived of haproxy
+- hosts: haproxy
+  roles:
+    - role: keepalived
+    - role: haproxy

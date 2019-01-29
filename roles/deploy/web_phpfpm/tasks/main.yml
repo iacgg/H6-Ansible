@@ -1,0 +1,22 @@
+---
+- name: sikre at php pools findes
+  template:
+    src: pool.j2
+    dest: "/etc/php/7.2/fpm/pool.d/{{ item.name }}.conf"
+    owner: www-data
+    group: www-data
+    mode: 0664
+  register: phpfpm
+  with_items: "{{ web_info }}"
+  tags:
+    - web
+    - phpfpm
+ 
+- name: restartet php fpm pools
+  service:
+    name: "php7.2-fpm"
+    state: restarted
+  when: phpfpm is changed
+  tags:
+    - web
+    - phpfpm

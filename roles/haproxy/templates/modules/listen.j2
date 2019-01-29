@@ -1,0 +1,10 @@
+
+# "modules/listen.j2"
+listen stats
+    bind {{ haproxy_stats_ip }}:1936
+    mode http
+    stats enable
+    stats hide-version
+    stats realm Haproxy\ Statistics
+    stats uri /
+

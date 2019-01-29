@@ -1,0 +1,11 @@
+---
+- name: sikre at database er oprettet
+  run_once: true
+  mysql_db:
+    name: "{{ item.database }}"
+    state: present
+    login_user: root
+    login_password: "{{ percona_root_password }}"
+  with_list: "{{ mysql_info }}"
+  tags:
+    - mysql

@@ -1,0 +1,13 @@
+{% if frontend.network_allowed_enabled|default('true') %}
+
+# "modules/network_allowed.j2"
+    acl network_allowed src -f {{ haproxy_base_path }}/network_allowed.lst
+    http-request del-header X-Network-Allowed
+    http-request set-header X-Network-Allowed yes if network_allowed
+    http-response del-header X-App-Type if !network_allowed
+    http-response del-header X-App-Name if !network_allowed
+    http-response del-header X-Cache if !network_allowed
+    http-response del-header X-Varnish if !network_allowed
+    http-response del-header X-Node if !network_allowed
+
+{% endif %}

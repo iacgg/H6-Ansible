@@ -1,0 +1,22 @@
+---
+- web:
+    - name: "101"
+      titel: "101 titel custom"
+      repo: https://github.com/mrscherrycoke/homepage101.git
+      domains:
+        - 101.dk
+      fpm_settings:
+        - mode: dynamic
+          max_children: 20
+          start_servers: 10
+          min_spare_servers: 7
+          max_spare_servers: 12
+      php_settings:
+        max_file_uploads: 50
+        upload_max_filesize: 25M
+        post_max_size: 12M
+      https: true
+- mysql:
+   - username: "homepage101"
+     password: 101MysqlPassword
+     database: "homepage101"

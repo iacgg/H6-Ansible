@@ -1,0 +1,83 @@
+---
+- name: Sikre at grupper der er specifikke til operativ systemet findes
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items: "{{ distribution_user_groups | union(other_user_groups | default([ ])) }}"
+  when: force_group_creation|default(false)
+  tags:
+    - users
+
+- name: Sikre at brugerens gruppe er oprettet
+  group:
+    name: "{{ item.key }}"
+    state: present
+  with_dict: "{{ users }}"
+  loop_control:
+    label:  "{{ item.key }}"
+  tags:
+    - users
+  
+- name: Sikre at brugeren er oprettet
+  user:
+    name: "{{ item.key }}"
+    createhome: yes
+    shell: "{{ user_shell|default('/bin/bash') }}"
+    state: "{{ item.value.state | default('present') }}"
+    password: "{{ item.value.password }}"
+    group: "{{ item.key }}"
+    groups: "{{ distribution_user_groups | union(other_user_groups | default([ ])) | join (',') }}"
+    append: yes
+  with_dict: "{{ users }}"
+  loop_control:
+    label:  "{{ item.key }}"
+  tags:
+    - users
+
+- name: Sikre at brugers .ssh mappe er oprettet
+  file:
+    path: "/home/{{ item.key }}/.ssh"
+    owner: "{{ item.key }}"
+    group: "{{ item.key }}"
+    mode: 0700
+    state: "directory"
+  with_dict: "{{ users }}"
+  loop_control:
+    label:  "{{ item.key }}"
+  tags:
+    - users
+    - users-keys
+
+- name: Sikre at brugeren authorized_keys fil er på plads
+  template:
+    src: "authorized_keys"
+    dest: "/home/{{ item.key }}/.ssh/authorized_keys"
+    owner: "{{ item.key }}"
+    group: "{{ item.key }}"
+    mode: 0600
+  with_dict: "{{ users }}"
+  loop_control:
+    label:  "{{ item.key }}"
+  tags:
+    - users
+    - users-keys
+    
+- name: Sikre at sudo pakken er installeret
+  apt:
+    pkg: "sudo"
+    state: present
+  tags:
+    - users
+    - sudoers
+
+- name: Sikre at medlemmer at sudo gruppen ikke længere skal bruge password for at benytte sudo
+  template:
+    src: "sudoers.j2"
+    dest: "{{ sudoers_location | default('/etc/sudoers') }}"
+    owner: "root"
+    group: "{{ root_group|default('root') }}"
+    mode: 0440
+    validate: "visudo -cf %s"
+  tags:
+    - users
+    - sudoers

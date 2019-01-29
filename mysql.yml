@@ -1,0 +1,5 @@
+---
+# Udrullet perona-extradb clusteret
+- hosts: mysql
+  roles:
+    - role: percona-extradb

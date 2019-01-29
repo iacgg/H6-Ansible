@@ -1,0 +1,11 @@
+---
+- web:
+    - name: "intranet"
+      repo: https://github.com/mrscherrycoke/intranet101.git
+      domains:
+        - intranet.101.dk
+      https: true
+- mysql:
+    - username: intranet
+      password: intranetMysqlPassword
+      database: intranet

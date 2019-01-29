@@ -1,0 +1,25 @@
+{% if frontend.default_web_config|default('true') %}
+
+# "modules/del-headers.j2"
+    http-response del-header Server
+    http-response del-header Via
+    http-request del-header Proxy
+    http-request del-header X-Powered-By
+
+{% endif %}
+
+{% for frontend_map in haproxy_frontend_mapping  %}
+{% if frontend_map.frontend == frontend.name  %}
+{% if frontend_map.del_header_key_name is defined %}
+
+# "modules/del-headers.j2"
+{% for del_header_lists in frontend_map.del_header_key_name  %}
+{% for values in haproxy_del_header_lists[del_header_lists] %}
+    acl {{ del_header_lists }}_del_header hdr_{{ values.host_match_method|default('beg') }}(host) -i -f {{ haproxy_base_path }}/del_header/{{ del_header_lists }}.lst
+    http-request del-header{% for header in values.headers %} {{ header }} {% endfor %}if {{ del_header_lists }}_del_header
+{% endfor  %}
+{% endfor  %}
+
+{% endif %}
+{% endif %}
+{% endfor %}

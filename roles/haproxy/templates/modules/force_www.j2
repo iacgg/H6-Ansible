@@ -1,0 +1,17 @@
+{% for frontend_map in haproxy_frontend_mapping  %}
+{% if frontend_map.frontend == frontend.name  %}
+{% if frontend_map.force_www_key_name is defined %}
+
+# "modules/force_www.j2"
+    acl beg_www hdr_beg(host) -i www.
+{% for force_www_lists in frontend_map.force_www_key_name  %}
+{% for values in haproxy_force_www_lists[force_www_lists] %}
+    acl {{ force_www_lists }}_fw hdr_{{ values.host_match_method|default('beg') }}(host) -i -f {{ haproxy_base_path }}/force_www/{{ force_www_lists }}.lst
+{% endfor  %}
+{% endfor  %}
+# This do not forward to HTTPS, https and www redirect is seperated
+    http-request redirect location http://www.%[hdr(host)]%[capture.req.uri] code 301 if {% for acl_names in frontend_map.force_www_key_name %}{{ acl_names }}_fw {% endfor %}!beg_www{% if haproxy_letsencrypt_backend is defined %} !is_le{% endif %} 
+
+{% endif %}
+{% endif %}
+{% endfor %}

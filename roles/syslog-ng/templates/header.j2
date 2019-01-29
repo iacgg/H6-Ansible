@@ -1,0 +1,20 @@
+@version: {{ syslog_ng_config_version }}
+{% include "include.j2" %}
+
+# Syslog-ng configuration file, compatible with default Debian syslogd
+# installation.
+
+# First, set some global options.
+options {
+  chain_hostnames(off);
+  flush_lines(0);
+  use_dns(no);
+# Changed by SB to yes, down under
+  use_fqdn(yes);
+  owner("root");
+  group("adm");
+  perm(0640);
+  stats_freq(0);
+  bad_hostname("^gconfd$");
+};
+

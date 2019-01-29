@@ -1,0 +1,15 @@
+{% set haproxy_nbprocs = ansible_processor_vcpus %}
+
+# "modules/stats.j2"
+{% for n in range(0, haproxy_nbprocs) %}
+{% set port = 1936 + n %}
+frontend stats{{ n+1 }}
+  bind :{{ port }}
+  mode http
+  bind-process {{ n+1 }}
+  stats enable
+  stats hide-version
+  stats realm Haproxy\ Statistics
+  stats uri /
+{% endfor %}
+

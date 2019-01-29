@@ -1,0 +1,128 @@
+{% include "modules/global.j2" %}
+{% include "modules/defaults.j2" %}
+
+{% if haproxy_multiple_cores == false -%}
+{% include "modules/listen.j2" %}
+{% else %}
+{% include "modules/stats.j2" %}
+{%- endif %}
+
+{% for frontend in haproxy_frontends %}
+
+### Start of frontend {{ frontend.name }}
+frontend {{ frontend.name }}
+
+{% for binding in frontend.bindings %}
+# "modules/bind_" + binding.type + binding.version|default('') + ".j2"
+{% if binding.interface is not defined %}
+{% set bind_ip = '*' %}
+{% elif binding.interface == '*' %}
+{% set bind_ip = '*' %}
+{% elif binding.interface|ipaddr %}
+{% set bind_ip = binding.interface %}
+{% else %}
+{% set bind_ip = keepalived_vrrp_groups[binding.vrrp_group][binding.interface]['vip'] %}
+{% endif %}
+    bind {{ bind_ip }}{% if binding.port is defined %}:{{ binding.port }}{% else %}{% include "modules/bind_" + binding.type + binding.version|default('') + ".j2" %}{% endif %} 
+
+{% endfor %}
+
+{% if frontend.mode is defined %}
+# If custom frontend mode is defined
+    mode {{ frontend.mode }}
+
+{% endif %}
+{% if frontend.timeout is defined %}
+# If custom timeout server or client is defined
+    timeout {{ frontend.timeout }}
+
+{% endif %}
+{% if frontend.unique_id_enabled|default(false) %}
+# If frontend.unique_id_enabled is true, enabled for better tracing 
+    unique-id-format %{+X}o\ %ci:%cp_%fi:%fp_%Ts_%rt:%pid
+    unique-id-header X-ReqId
+
+{% endif %}
+{% if frontend.options is defined %}
+# If custom frontend options is defined
+{% for option in frontend.options %}
+    option {{ option }}
+{% endfor %}
+
+{% endif %}
+
+{% if frontend.maxconn is defined %}
+# If custom max connections is defined
+    maxconn {{ frontend.maxconn }}
+{% endif %}
+
+{% if frontend.logging|default('true') %}
+# "modules/log_" + haproxy_log_format + ".j2"
+{% if frontend.log_facility is defined %}
+    # no log should disable inheritance
+    no log
+    log /dev/log len 2048 {{ frontend.log_facility }}
+{% endif %}
+{% include "modules/log_" + frontend.logging|default('haproxy') + ".j2" %}
+
+{% endif %}
+
+{% if frontend.default_web_config|default('true') %}
+# Allows the  X-Forwarded-For header, but not for localhost
+    option forwardfor except 127.0.0.0/8
+# Enables HTTP connection closing on the server side
+    option http-server-close
+# Allow the inspection of package for up to 5 seconds
+    tcp-request inspect-delay 5s
+{% endif %}
+
+    http-request set-header X-Real-IP %[src]
+    http-request set-header X-Forwarded-Proto https if { ssl_fc }
+
+{% include "modules/del-headers.j2" %}
+
+{% if frontend.monitor_uri is defined %}
+    monitor-uri {{ frontend.monitor_uri }}
+{% endif %}
+
+{% if haproxy_letsencrypt_backend is defined %}
+    acl is_le path_beg /.well-known/
+{% endif %}
+
+{% include "modules/network_allowed.j2" %}
+{% include "modules/force_www.j2" %}
+{% include "modules/force_https.j2" %}
+{% include "modules/redirects.j2" %}
+{% include "modules/restricted_access.j2" %}
+
+{% if haproxy_letsencrypt_backend is defined %}
+    use_backend b_letsencrypt if is_le
+{% endif %}
+
+{% if frontend.eradicator_backend is defined %}
+
+    acl is_purge_or_ban method PURGE BAN
+    http-request set-header X-Eradicator-Proto https if is_purge_or_ban { ssl_fc }
+
+{% endif %}
+{% include "modules/backend_acl.j2" %}
+{% if frontend.eradicator_backend is defined %}
+
+    # we can't differentiate on the host header here, since purges are sent with the host name
+    # of the site to be purged - before eradicator had it's own ip-address, but we know that all PURGE
+    # requests should go to eradicator
+    
+    use_backend b_{{ frontend.eradicator_backend }} if is_purge_or_ban
+
+{% endif %}
+{% include "modules/backend_use_backend.j2" %}
+
+{% if frontend.default_backend is defined %}
+    default_backend b_{{ frontend.default_backend }}
+{% endif %}
+
+### End of fronted {{ frontend.name }}
+{% endfor %}
+
+{% include "modules/backends.j2" %} 
+{% include "modules/not_found_backend.j2" %}

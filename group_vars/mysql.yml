@@ -1,0 +1,16 @@
+---
+# Sætter Root password for percona extradb
+percona_root_password: "Root101Root"
+
+# Sætter mysql master som master
+percona_master: "{% for host in groups['mysql-master'] %}{{ hostvars[host].inventory_hostname }}{% endfor %}"
+# Laver en comma sepereret liste med mysql noder
+percona_active_nodes: "{% for host in groups['mysql'] %}{{ lookup('dig', hostvars[host].inventory_hostname) }}{% if not loop.last %},{% endif %}{% endfor %}"
+
+# Sætter percona_ip til dns recorden for inventory_hostname for den enkelte node
+percona_ip: "{{ lookup('dig', inventory_hostname) }}"
+
+# replication brugernavn
+percona_user: "sstuser"
+# replication kodeord
+percona_password: "pa$$w0rd"

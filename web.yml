@@ -1,0 +1,8 @@
+---
+# Udruller apache2 og php på web clusteret samt wordpress cli og autofs
+- hosts: web
+  roles:
+    - role: apache2
+    - role: wp_cli
+    - role: php
+    - role: autofs

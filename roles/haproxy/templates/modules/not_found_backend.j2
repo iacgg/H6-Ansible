@@ -1,0 +1,8 @@
+{% if haproxy_notfound_lists is defined %}
+
+# "modules/not_found_backend.j2"
+backend b_notfound
+    mode http
+    errorfile 503 {{ haproxy_base_path }}/404notfound.http
+
+{% endif %}

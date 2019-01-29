@@ -1,0 +1,59 @@
+########################
+# Custom Sources
+########################
+
+{%- set sources_lists = syslog_ng_log | json_query('[*].sources') %}
+{%- set source_all = [] -%}
+
+{%- for sources in sources_lists %}
+{%- for src in sources %}
+{{ source_all.append(src) }}
+{% endfor -%}
+{% endfor -%}
+
+{%- for source in source_all|unique %}
+
+{%- if source == "s_web_error_log" %}
+source s_web_error_log {
+  file(
+    "/var/log/apache2/error.log"
+    program-override("web-errors")
+    default-facility(local3)
+    default-priority(err)
+  );
+};
+{% endif -%}
+
+{%- if source == "s_web_access_log" %}
+source s_web_access_log {
+  file(
+    "/var/log/apache2/access.log"
+    program-override("web-access")
+    default-facility(local2)
+    default-priority(info)
+  );
+};
+{% endif -%}
+
+{%- if source == "s_dpkg_log" %}
+source s_dpkg_log {
+	file(
+    "/var/log/dpkg.log"
+    program-override("dpkg-log")
+    default-priority(notice)
+    default-facility(local1)
+	);
+};
+{% endif -%}
+
+{%- if source == "src_remote" %}
+source src_remote {
+    network(
+      transport("udp")
+      ip(0.0.0.0) port(514)
+      keep_hostname(yes)
+    );
+};
+{% endif -%}
+
+{% endfor -%}

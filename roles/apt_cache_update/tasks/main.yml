@@ -1,0 +1,25 @@
+---
+- name: Tjek om cache er opdaretet efter boot
+  stat:
+    path: /root/.cache_updated_on_boot
+  register: updated_file_stats
+  check_mode: false
+  changed_when: false
+  tags:
+    - apt-cache
+
+- name: Update apt cache
+  apt:
+    update_cache: true
+  when: "not updated_file_stats.stat['exists'] or update_cache|default(false)"
+  register: cache_updated
+  tags:
+    - apt-cache
+
+- name: Lav fil for at checke om cache er opdateret efter boot
+  file:
+    path: /root/.cache_updated_on_boot
+    state: touch
+  when: cache_updated is changed
+  tags:
+    - apt-cache

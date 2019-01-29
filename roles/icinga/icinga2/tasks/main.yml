@@ -1,0 +1,371 @@
+---
+- name: Sikre Icinga2 repo key er tilføjet
+  apt_key:
+    url: https://packages.icinga.com/icinga.key
+    state: present
+  register: key_added
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre icinga repo er tilstede
+  apt_repository:
+    repo: "deb http://packages.icinga.com/ubuntu icinga-bionic main"
+    update_cache: yes
+    state: present
+  when: key_added is changed
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Installere icinga2 og icingaweb2 adhængigheder
+  package:
+    name:
+      - software-properties-common
+      - python-mysqldb
+      - python-passlib
+      - apache2
+      - php-curl
+      - php-gettext
+      - php-intl
+      - php-mbstring
+      - openssl
+      - php-xml
+      - libapache2-mod-php
+      - nagios-plugins
+      - nagios-nrpe-plugin
+      - libwww-perl
+      - libcrypt-ssleay-perl
+      - libsys-syslog-perl
+      - python-passlib
+    state: present
+  tags:
+    - icinga2
+    - icingaweb2
+    - icinga2_requirements
+
+- name: Installere icinga2 pakker
+  apt:
+    name:
+      - icinga2
+      - icingacli
+      - icingaweb2
+      - icinga2-ido-mysql
+    state: present
+  register: icinga2_install
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Tilføjer icingaweb2 til www-data
+  shell: |
+    addgroup --system icingaweb2
+    usermod -a -G icingaweb2 www-data
+  when: icinga2_install is changed and not ansible_check_mode
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at dbuser findes
+  mysql_db:
+    name: "{{ icingaweb_userdb_dbname }}"
+    login_host: "{{ icingaweb_userdb_host }}"
+    login_password: "{{ mysql_root_password }}"
+    state: present
+  register: icingaweb_userdb
+  when: not ansible_check_mode
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Kopier base sql skema til icinga
+  copy:
+    src: files/icingaweb2_base.sql
+    dest: /tmp/icingaweb2_base.sql
+  when: icingaweb_userdb is changed
+  tags:
+    - icinga2
+    - icingaweb2
+
+# User database
+####################################################
+- name: Importere base sql skema med brugeren der er blevet oprettet
+  mysql_db:
+    login_host: "{{ icinga2_monitordb_host }}"
+    login_password: '{{ mysql_root_password }}'
+    name: "{{ icingaweb_userdb_dbname }}"
+    state: import
+    target: /tmp/icingaweb2_base.sql
+  register: icinga2_monitordb
+  when: icingaweb_userdb is changed
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at database admin er korrekt rettigheder
+  mysql_user:
+    login_host: "{{ icingaweb_userdb_host }}"
+    login_password: '{{ mysql_root_password }}'
+    name: "{{ icingaweb_userdb_username }}"
+    password: "{{ icingaweb_userdb_userpassword }}"
+    priv: "{{ icingaweb_userdb_dbname }}.*:ALL"
+    state: present
+  when: not ansible_check_mode
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sætter default admin kodeord
+  shell: |
+    adminpasswd=$(openssl passwd -1 {{ icingaweb_adminuser_password }})
+    mysql {{ icingaweb_userdb_dbname }} -uroot -p{{ mysql_root_password }} -e \
+    "UPDATE icingaweb_user SET password_hash ='$adminpasswd' WHERE name = '{{ icingaweb_adminuser_name }}';"
+  when: icingaweb_userdb is changed
+  tags:
+    - icinga2
+    - icingaweb2
+    - skip_ansible_lint  # The environment variable is set as part of the shell command
+
+# Monitor database
+####################################################
+- name: Tjekker om monitoring databases findes
+  mysql_db:
+    name: "{{ icinga2_monitordb_dbname }}"
+    login_host: "{{ icinga2_monitordb_host }}"
+    login_password: '{{ mysql_root_password }}'
+    state: present
+  register: icinga2_monitordb
+  when: not ansible_check_mode
+  tags:
+    - icinga2
+
+- name: Kopier monitoring sql skema over
+  copy:
+    src: files/icinga2_base.sql
+    dest: /tmp/icinga2_base.sql
+  when: icinga2_monitordb is changed
+  tags:
+    - icinga2
+
+- name: Importere monitoring databasen over
+  mysql_db:
+    login_host: "{{ icinga2_monitordb_host }}"
+    login_password: '{{ mysql_root_password }}'
+    name: "{{ icinga2_monitordb_dbname }}"
+    state: import
+    target: /tmp/icinga2_base.sql
+  when: icinga2_monitordb is changed
+  tags:
+    - icinga2
+
+- name: Sikre at icingaweb2 mapperne findes
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: www-data
+    group: icingaweb2
+    mode: 0750
+  with_items:
+    - /etc/icingaweb2/modules
+    - /etc/icingaweb2/modules/monitoring
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Tjekker om ido-mysql konfiguration er up to date
+  template:
+    dest: /etc/icinga2/features-available/ido-mysql.conf
+    src: templates/ido-mysql.conf.j2
+  register: ido_mysql_conf
+  notify: reload icinga2
+  tags:
+    - icinga2
+
+- name: Sikre at en monitor bruger findes
+  mysql_user:
+    login_host: "{{ icinga2_monitordb_host }}"
+    login_password: '{{ mysql_root_password }}'
+    name: "{{ icinga2_monitordb_username }}"
+    password: "{{ icinga2_monitordb_userpassword }}"
+    priv: "{{ icinga2_monitordb_dbname }}.*:ALL"
+    state: present
+  when: ido_mysql_conf is changed and not ansible_check_mode
+  tags:
+    - icinga2
+
+# Icingaweb2 Configuration files
+- name: Sikre at /etc/icingaweb2/authentication.ini findes
+  template:
+    src: templates/authentication.ini.j2
+    dest: /etc/icingaweb2/authentication.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at /etc/icingaweb2/config.ini findes
+  template:
+    src: templates/config.ini.j2
+    dest: /etc/icingaweb2/config.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at /etc/icingaweb2/resources.ini findes
+  template:
+    src: templates/resources.ini.j2
+    dest: /etc/icingaweb2/resources.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at /etc/icingaweb2/roles.ini findes
+  template:
+    src: templates/roles.ini.j2
+    dest: /etc/icingaweb2/roles.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at /etc/icingaweb2/modules/monitoring/backends.ini findes
+  template:
+    src: templates/backends.ini.j2
+    dest: /etc/icingaweb2/modules/monitoring/backends.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at /etc/icingaweb2/modules/monitoring/commandtransports.ini findes
+  template:
+    src: templates/commandtransports.ini.j2
+    dest: /etc/icingaweb2/modules/monitoring/commandtransports.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at /etc/icingaweb2/modules/monitoring/config.ini findes
+  template:
+    src: templates/monitoring_config.ini.j2
+    dest: /etc/icingaweb2/modules/monitoring/config.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at /etc/icingaweb2/groups.ini findes
+  template:
+    src: templates/groups.ini.j2
+    dest: /etc/icingaweb2/groups.ini
+  notify: reload icinga2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at Icingaweb2 monitoring modulerne er aktiveret
+  command: icingacli module enable monitoring
+  notify:
+    - reload icinga2
+  when: icinga2_install.changed
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at timezone er sat til UTC
+  lineinfile:
+    dest: /etc/php/7.2/apache2/php.ini
+    line: 'date.timezone = UTC'
+  notify: restart apache2
+  tags:
+    - icinga2
+    - icingaweb2
+
+- name: Sikre at icingaweb.conf findes
+  template:
+    src: templates/icingaweb.conf.j2
+    dest: /etc/apache2/sites-available/{{ icingaweb2_fqdn }}.conf
+  notify: restart apache2
+  tags:
+    - icinga2
+    - icingaweb2
+    - icingaweb2_siteconf
+
+- name: Tjekker om icingaweb.conf er aktiveret
+  stat:
+    path: /etc/apache2/sites-enabled/{{ icingaweb2_fqdn }}.conf
+  register: icingaweb2_site_conf
+  tags:
+    - icinga2
+    - icingaweb2
+    - icingaweb2_siteconf
+
+- name: Sikre at icingaweb2 apache conf er aktiveret
+  command: a2ensite {{ icingaweb2_fqdn }}
+  when: not icingaweb2_site_conf.stat.exists
+  notify: restart apache2
+  tags:
+    - icinga2
+    - icingaweb2
+    - icingaweb2_siteconf
+
+- name: Aktivere Icinga2 features
+  shell: |
+      icinga2 feature enable ido-mysql && \
+      icinga2 api setup && \
+      icinga2 api user --user {{ icinga2_api_user_name }} --password {{ icinga2_api_user_password }} && \
+      icinga2 feature enable api && \
+      icinga2 feature enable notification && \
+      icinga2 feature enable livestatus && \
+      icinga2 feature enable command && \
+      icinga2 feature enable syslog
+  when: icinga2_install is changed
+  notify:
+    - restart icinga2
+  tags:
+    - icinga2
+
+- name: Sikre at icinga2 hosts, groups konfiguration findes
+  template:
+    src: "{{ item }}"
+    dest: "/etc/icinga2/conf.d/{{ item[:-3] }}"
+  notify: reload icinga2
+  with_items:
+    - hosts.conf.j2
+    - groups.conf.j2
+    - notifications.conf.j2
+    - users.conf.j2
+    - templates.conf.j2
+    - services.conf.j2
+  tags:
+    - icinga2
+    - icinga2_hosts
+
+- name: Tjekker om du er ændringer til brugere
+  lineinfile:
+    dest: /etc/icingaweb2/users.sql
+    line: "REPLACE INTO icingaweb_user (name, active, password_hash) VALUES ('{{ item.key }}', 1, '{{ item.value.password }}');\
+           REPLACE INTO icingaweb_group_membership (username, group_id) VALUES ('{{ item.key }}', 1);"
+    state: present
+    create: yes
+  with_dict: "{{ users }}"
+  register: users
+  loop_control:
+    label: "{{ item.key }}"
+  tags:
+    - icinga2
+    - icingaweb2
+    - icingaweb2_users
+
+- name: Updatere brugeres kodeord hvis ændret
+  shell: |
+    mysql -h {{ icingaweb_userdb_host }} -u root {{ icingaweb_userdb_dbname }} < /etc/icingaweb2/users.sql
+  notify: reload icinga2
+  when: users is changed
+  tags:
+    - icinga2
+    - icingaweb2

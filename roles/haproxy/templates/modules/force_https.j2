@@ -1,0 +1,20 @@
+{% for frontend_map in haproxy_frontend_mapping  %}
+{% if frontend_map.frontend == frontend.name  %}
+{% if frontend_map.force_https_key_name is defined %}
+
+# "modules/force_https.j2"
+{% for force_https_lists in frontend_map.force_https_key_name  %}
+{% for values in haproxy_force_https_lists[force_https_lists] %}
+{% if values.exclude_force_by_path is defined %}
+    acl {{ force_https_lists }}_path path_beg{% for path in values.exclude_force_by_path %} {{ path }}{% endfor %} 
+{% else %}
+    acl {{ force_https_lists }}_path path /NO-HTTPS
+{% endif %}
+    acl {{ force_https_lists }}_fh hdr_{{ values.host_match_method|default('beg') }}(host) -i -f {{ haproxy_base_path }}/force_https/{{ force_https_lists }}.lst
+{% endfor  %}
+    http-request redirect scheme https code 301 if {% for acl_names in frontend_map.force_https_key_name %}{{ acl_names }}_fh {% endfor %}!{ ssl_fc }{% if haproxy_letsencrypt_backend is defined %} !is_le{% endif %}{% if frontend.eradicator_backend is defined %} !{ method PURGE BAN }{% endif %}{% if frontend.acme_enabled|default(false) %} !{ path_beg /.well-known/ }{% endif %} !{{ force_https_lists }}_path
+{% endfor  %}
+
+{% endif %}
+{% endif %}
+{% endfor %}

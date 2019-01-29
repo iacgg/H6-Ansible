@@ -1,0 +1,430 @@
+Building configuration...
+
+Current configuration : 10237 bytes
+!
+! Last configuration change at 13:26:47 UTC Mon Jan 28 2019 by admin
+! NVRAM config last updated at 13:27:00 UTC Mon Jan 28 2019 by admin
+!
+version 15.2
+no service pad
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service password-encryption
+service compress-config
+!
+hostname ALS-1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition Mgmt-vrf
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+enable secret 5 $1$2K9u$wFwmyCgd4mDN93D6Tcm/P1
+!
+username admin password 7 135447433B0D17393C2B3A37
+username BACKUP password 7 115849542713181F13253920
+no aaa new-model
+switch 1 provision ws-c3650-24ts
+!
+!
+!
+!
+!
+!
+no ip domain-lookup
+ip domain-name 101.dk
+ip dhcp snooping vlan 10-11
+ip dhcp snooping
+!
+!
+qos queue-softmax-multiplier 100
+vtp domain 101
+vtp mode transparent
+!
+crypto pki trustpoint TP-self-signed-3311749402
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-3311749402
+ revocation-check none
+ rsakeypair TP-self-signed-3311749402
+!
+!
+crypto pki certificate chain TP-self-signed-3311749402
+ certificate self-signed 01
+  3082022B 30820194 A0030201 02020101 300D0609 2A864886 F70D0101 05050030 
+  31312F30 2D060355 04031326 494F532D 53656C66 2D536967 6E65642D 43657274 
+  69666963 6174652D 33333131 37343934 3032301E 170D3139 30313136 31323030 
+  35315A17 0D323030 31303130 30303030 305A3031 312F302D 06035504 03132649 
+  4F532D53 656C662D 5369676E 65642D43 65727469 66696361 74652D33 33313137 
+  34393430 3230819F 300D0609 2A864886 F70D0101 01050003 818D0030 81890281 
+  8100B7B0 EEADBA86 7DF34569 70132ED7 4708AD50 03059EE2 B710D700 DA54486C 
+  CEDBFE65 5FA66A1B 3A3FD5F4 9E65D50A CEA4EAA8 95F56803 93F68FED 218CCD27 
+  DCD3FCB4 6840438D 0D5A6328 BA740E83 8A0E17FE CF79C9DD 706E18F9 28719BDC 
+  ABA2462A 0AE66EC2 ED6C00EF BDA41B6A C370732F 0B45C323 5337EF50 8594C187 
+  C1FF0203 010001A3 53305130 0F060355 1D130101 FF040530 030101FF 301F0603 
+  551D2304 18301680 14EE7363 1564C7E6 059218B9 EAA9791C 37BD2DB9 2E301D06 
+  03551D0E 04160414 EE736315 64C7E605 9218B9EA A9791C37 BD2DB92E 300D0609 
+  2A864886 F70D0101 05050003 81810087 7B09F67C D6900D90 7DB773C6 9A4EF34D 
+  F60515C0 0F9B508B 359994BA 54AC6C7D 5D6A7685 C2BC09F3 D8C4A593 2E61EF6A 
+  EF2E506A 58456408 B956A300 5AD77928 38C93395 E512860C 19249CA2 F55FC5AE 
+  7C6E4AA0 69B8F3AF 2E73EAEE E812D2A7 CF0005DF 46647A84 FB7D7870 C43091EA 
+  C610420A 31187F68 6286628B 7A74A8
+  	quit
+diagnostic bootup level minimal
+!
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+spanning-tree extend system-id
+hw-switch switch 1 logging onboard message level 3
+!
+redundancy
+ mode sso
+!
+!
+vlan 10
+ name Klient
+!
+vlan 11
+ name teknikker
+!
+vlan 90
+ name Native
+!
+vlan 99
+ name Management
+!
+vlan 666
+ name Black-hole
+!
+!
+class-map match-any non-client-nrt-class
+!
+policy-map port_child_policy
+ class non-client-nrt-class
+  bandwidth remaining ratio 10
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Port-channel1
+ description forbundet til DLS-1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ ip dhcp snooping trust
+!
+interface Port-channel2
+ description forbundet til DLS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ ip dhcp snooping trust
+!
+interface GigabitEthernet0/0
+ vrf forwarding Mgmt-vrf
+ no ip address
+ negotiation auto
+!
+interface GigabitEthernet1/0/1
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 1 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 1 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/3
+ description forbundet til DLS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 2 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/4
+ description forbundet til DLS-2
+ switchport trunk native vlan 90
+ switchport trunk allowed vlan 10,11,90,99
+ switchport mode trunk
+ switchport nonegotiate
+ channel-group 2 mode active
+ ip dhcp snooping trust
+!
+interface GigabitEthernet1/0/5
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security mac-address sticky 0011.3247.d30d
+ switchport port-security
+!
+interface GigabitEthernet1/0/6
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/7
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/8
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/9
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/10
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/11
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/12
+ description Klient
+ switchport access vlan 10
+ switchport mode access
+!
+interface GigabitEthernet1/0/13
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/14
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/15
+ description Tekniker
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/16
+ description Tekniker
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/17
+ description Tekniker
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/18
+ description Tekniker
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/19
+ description Tekniker
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/20
+ description Tekniker
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/21
+ description Tekniker
+ switchport access vlan 11
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+!
+interface GigabitEthernet1/0/22
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/23
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/0/24
+ description Porte der ikke bliver brugt
+ switchport access vlan 666
+ switchport mode access
+ switchport port-security maximum 3
+ switchport port-security mac-address sticky
+ switchport port-security
+ shutdown
+!
+interface GigabitEthernet1/1/1
+!
+interface GigabitEthernet1/1/2
+!
+interface GigabitEthernet1/1/3
+!
+interface GigabitEthernet1/1/4
+!
+interface Vlan1
+ no ip address
+ no ip route-cache
+ shutdown
+!
+interface Vlan10
+ no ip address
+ no ip route-cache
+!
+interface Vlan99
+ description Bruges til Management af Switche
+ ip address 10.100.99.4 255.255.255.0
+!
+ip default-gateway 10.100.99.1
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+ip ssh version 2
+!
+!
+logging trap warnings
+logging host 10.100.60.15 transport udp port 2002
+!
+!
+!
+banner exec ^CCNo access without permission!^C
+banner login ^CCNo access without permission!^C
+banner motd ^CCNo access without permission!^C
+!
+line con 0
+ exec-timeout 5 0
+ logging synchronous
+ login local
+ stopbits 1
+line aux 0
+ stopbits 1
+line vty 0 4
+ exec-timeout 0 0
+ logging synchronous
+ login local
+ transport input ssh
+line vty 5 14
+ exec-timeout 0 0
+ logging synchronous
+ login local
+ transport input ssh
+line vty 15
+ login local
+ transport input ssh
+!
+ntp server 10.0.50.25 minpoll 9 prefer
+ntp server 10.0.50.33 minpoll 10
+wsma agent exec
+ profile httplistener
+ profile httpslistener
+!
+wsma agent config
+ profile httplistener
+ profile httpslistener
+!
+wsma agent filesys
+ profile httplistener
+ profile httpslistener
+!
+wsma agent notify
+ profile httplistener
+ profile httpslistener
+!
+!
+wsma profile listener httplistener
+ transport http
+!
+wsma profile listener httpslistener
+ transport https
+!
+ap group default-group
+end

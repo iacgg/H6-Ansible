@@ -1,0 +1,42 @@
+---
+- name: Sikre at pakker til autofs og dfs shared er installeret
+  apt:
+    pkg:
+      - autofs
+      - cifs-utils
+  tags:
+    - autofs
+    - cifs
+    - dfs
+
+- name: Sikre at auto.mnt bliver loadet
+  lineinfile:
+    path: /etc/auto.master
+    line: "/mnt /etc/auto.mnt"
+    state: present
+  register: autofs_master
+  tags:
+    - autofs
+    - cifs
+    - dfs
+
+- name: Sikre at auto.mnt er deployet og up to date
+  template:
+    src: auto-mnt.j2
+    dest: /etc/auto.mnt
+  register: autofs_mnt
+  tags:
+    - autofs
+    - cifs
+    - dfs
+
+- name: Hvis der er ændringer så restart autofs
+  systemd:
+    name: autofs
+    state: restarted
+    enabled: yes
+  when: autofs_master is changed or autofs_mnt is changed
+  tags:
+    - autofs
+    - cifs
+    - dfs

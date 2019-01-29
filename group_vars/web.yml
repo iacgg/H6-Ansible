@@ -1,0 +1,11 @@
+---
+# Sætter hvilken special logs web serverne ekstra skal sende videre til syslog
+syslog_ng_log:
+  - desc: Ubuntu, our default log behaver to syslog
+    sources:
+      - s_src
+      - s_dpkg_log
+      - s_web_access_log
+      - s_web_error_log
+    destinations:
+      - d_syslog_server

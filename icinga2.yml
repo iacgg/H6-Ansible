@@ -1,0 +1,6 @@
+---
+# Udruller local mysql og icinga2 på icinga serveren
+- hosts: icinga
+  roles:
+    - role: icinga/mysql
+    - role: icinga/icinga2

@@ -1,0 +1,44 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Hent customer information
+      local_action:
+        module: command
+        argv:
+          - "./deploy/deploy.py"
+          - "{{ deploy|default('all') }}"
+      register: deploy_information
+    # Debug hvis et -v er sat, så vises output af scriptet
+    - debug:
+        verbosity: 1
+        var: deploy_information.stdout
+  tags:
+    - always
+        
+- hosts: all
+  roles:
+    - role: deploy/deploy_info
+      deploy_info: "{{ hostvars['localhost'].deploy_information.stdout }}"
+
+  tags:
+    - always
+
+- hosts: mysql-master
+  roles:
+    - role: deploy/mysql_databases
+    - role: deploy/mysql_users
+  tags:
+    - mysql
+
+- hosts: web
+  roles:
+    - role: deploy/web_phpfpm
+    - role: deploy/web_code
+    - role: deploy/web_shared
+    - role: deploy/web_vhost
+    - role: deploy/web_code_release
+  tags:
+    - web

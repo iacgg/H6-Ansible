@@ -1,0 +1,10 @@
+{% for frontend_map in haproxy_frontend_mapping  %}
+{% if frontend_map.frontend == frontend.name  %}
+
+# "modules/backend_acl.j2"
+{% for backend in frontend_map.backend  %}
+    acl {{ backend['name'] }}_list hdr_{% if backend['host_match'] is defined %}{{ backend['host_match'] }}{% else %}beg{% endif %}(host) -i -f {{ haproxy_base_path }}/backend/{{ backend['name'] }}.lst
+{% endfor %}
+
+{% endif %}
+{% endfor %}

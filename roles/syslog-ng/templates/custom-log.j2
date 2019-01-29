@@ -1,0 +1,25 @@
+########################
+# Custom logs
+########################
+{% for log in syslog_ng_log %}
+# {{ log['desc'] }}
+log {
+{% for src in log['sources'] %}
+  source({{ src }});
+{% endfor %}
+{% if 'rewrites' in log %}
+{% for rewrite in log['rewrites'] %}
+  rewrite({{ rewrite }});
+{% endfor %}
+{% endif %}
+{% if 'filters' in log %}
+{% for filter in log['filters'] %}
+  filter({{ filter }});
+{% endfor %}
+{% endif %}
+{% for dest in log['destinations'] %}
+  destination({{ dest }});
+{% endfor %}
+};
+{% endfor %}
+

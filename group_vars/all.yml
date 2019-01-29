@@ -1,0 +1,22 @@
+---
+# Fortæller ansible hvilken python den skal bruge at finde på en host
+ansible_python_interpreter: /usr/bin/python3
+
+# En key value store med teknikkernes brugere og informationer
+users:
+  sb:
+    name: "Sebastian Berendt"
+    password: '$1$101$FbWVp4N.KQOYSK1YnthLy1'
+    email: "sebastian.berendt@gmail.com"
+    pubkey:
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDF8DSqpe5kaEjgzWDBvO88QPjNkeRsQpcEtA4UHrWLFPYW1ycA4h2eHlOEdZGTjDUKUpiWzWH2vbqrzafNY7+tduImNNWUZcZqplml9J4R9fXHFWC7AY7PECS/QRW3YD3q1HgRqwBlO6Bolx2Xo5lea/wgx+dt2nGz0k7JTJnQjahm+5QFlF6XRdCsyG3fDQ8dqKzHOx6hSJyiQlD7522Tj6VN7DKRhKMCY9HN27llahnNv0zmZZ2u2MByMlCzy7r6iruyEhkTurKdG53D2tWF0MYkIVMWtV/1GwzR1Qnu9tXL4mSkq5CL6W4vQz+BMcbvLUeGMH6otBopQgmFj76x sb@SB-Gamin"
+      - "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAQEAprk2byPhMRg9dIrzsAkuY7HlHAcv1TbvCjpkc3TEFBfInC2BTxc5zfHe9tSy72CakFtQIMsleZ/Hyq9rdnQko8pMto+PMaYc/UVCsGz9h/RnQYQGyafGjBld5F+bWIedouadrXGMwJ15qiE5d9vjxzaed6cz17zijOCjKVT1GhF0Aj7QLxsUKMpn+TCaASwUA6gUZrp2EoUFj+77SkHmuzBOpja6oP1QUgIeN0aJrj4zNrqXpJxPoMjgKFoA5rkGfx58ysGxs94PbmjVnIgyEreEtUNMYcPSeKVcwvV28XXUTbBCGlXiFL029VDKUEyBNdyIePNyTH4wtbU/DjQkaw== imported-openssh-key"
+  pox:
+    name: "Patrick Thune"
+    password: '$1$101$FbWVp4N.KQOYSK1YnthLy1'
+    email: "patrickthune@gmail.com"
+    pubkey:
+      - ""
+
+# Sætter hvilket navn alle server skal bruge hvis de bruges i HAProxy
+haproxy_backend_ip: "{{ lookup('dig', inventory_hostname) }}"

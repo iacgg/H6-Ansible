@@ -1,0 +1,18 @@
+/* {{ ansible_managed }} */
+
+apply Notification "mail-icingaadmin" to Host {
+  import "mail-host-notification"
+  user_groups = ["icingaadmins"]  
+  states = [ Up, Down ]
+  assign where host.vars.mailnotification == "true"
+  interval = 0 
+}
+
+apply Notification "mail-icingaadmin" to Service {          
+  import "mail-service-notification"
+  user_groups = ["icingaadmins"]  
+  states = [ {{ icinga2_mail_service_alert_states | join(', ') }} ]
+  assign where service.vars.mailnotification == "true"
+  interval = 0 
+}
+

@@ -1,0 +1,28 @@
+---
+- name: sikre at release symlink er oprette fra nyeste release
+  file:
+    src: "/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}"
+    dest: "/var/www/virtual/{{ item.name }}/current"
+    state: link
+  with_list: "{{ web_info }}"
+  tags:
+    - web
+
+- name: sletter gamle releases
+  script: ../files/cleanup.sh
+  args:
+    chdir: "/var/www/virtual/{{ item.name }}/releases/"
+  with_list: "{{ web_info }}"
+  tags:
+    - web 
+
+- name: sikre at permissions er korrekte
+  file:
+    path: "/var/www/virtual/{{ item.name }}"
+    state: directory
+    owner: www-data
+    group: www-data
+    recurse: true
+  with_list: "{{ web_info }}"
+  tags:
+    - web 

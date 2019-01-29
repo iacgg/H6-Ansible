@@ -1,0 +1,21 @@
+########################
+# Custom Templates
+########################
+
+{%- set templates_lists = syslog_ng_log | json_query('[*].templates') %}
+{%- set template_all = [] -%}
+
+{%- for templates in templates_lists %}
+{%- for src in templates %}
+{{ template_all.append(src) }}
+{% endfor -%}
+{% endfor -%}
+
+{%- for template in template_all|unique %}
+
+{%- if template == "example" %}
+# Still to be used. Maybe it will not make sense to use this part.
+# Will will find out
+{% endif -%}
+
+{% endfor -%}

@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+
+<VirtualHost *:80>
+    ServerAdmin admin@TOBECHANGED.dk
+{% for domain in item.domains %}
+{% if loop.first %} 
+    ServerName {{ domain }}
+{% else %}
+    ServerAlias {{ domain }}
+{% endif %}
+{% endfor %} 
+
+    DocumentRoot /var/www/virtual/{{ item.name }}/current
+    DirectoryIndex index.php
+
+    <Directory /var/www/virtual/{{ item.name }}/current>
+    Options Indexes FollowSymLinks MultiViews
+    AllowOverride None
+    Order allow,deny
+    allow from all
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ item.name }}-error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ item.name }}-access.log combined
+
+     <FilesMatch \.php$>
+            SetHandler "proxy:unix:/run/php/{{ item.name }}-php7.2-fpm.sock|fcgi://localhost/"
+        </FilesMatch>
+
+</VirtualHost>

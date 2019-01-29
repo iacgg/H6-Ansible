@@ -1,0 +1,19 @@
+{% for frontend_map in haproxy_frontend_mapping  %}
+{% if frontend_map.frontend == frontend.name  %}
+{% if frontend_map.redirect_key_name is defined %}
+
+# "modules/redirects.j2"
+{% for redirect_list in frontend_map.redirect_key_name  %}
+{% for values in haproxy_redirect_lists[redirect_list] %}
+    acl host_redirect_{{ redirect_list }} hdr_{{ values.host_match_method|default('end') }}(host) -i -f {{ haproxy_base_path }}/redirects/redirect_{{ redirect_list }}.lst
+{% if values.path is defined %}
+    acl path_redirect_{{ redirect_list }} path_{{ values.path_match_method|default('beg') }} -i {{ values.path }}
+{% endif %}
+    http-request redirect location {{ values.to }} code 301 if host_redirect_{{ redirect_list }}{% if values.path is defined %} path_redirect_{{ redirect_list }}{% endif %}{% if haproxy_letsencrypt_backend is defined %} !is_le{% endif %} 
+
+{% endfor %}
+{% endfor %}
+
+{% endif %}
+{% endif %}
+{% endfor %}

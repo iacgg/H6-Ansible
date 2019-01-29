@@ -1,0 +1,6 @@
+---
+dfs_username: linuxdfs
+dfs_password: 101Password
+dfs_domain: 101.loc
+dfs_namespace: storage
+dfs_path: webdata

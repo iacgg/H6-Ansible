@@ -1,0 +1,12 @@
+---
+    - name: Sikre at logical volume group er 100% extended
+      lvol:
+        vg: ubuntu-vg
+        lv: ubuntu-lv
+        size: 100%FREE
+        shrink: false
+    - name: Resize ubuntu-lv efter extention
+      filesystem:
+        fstype: ext4
+        dev: /dev/ubuntu-vg/ubuntu-lv
+        resizefs: yes

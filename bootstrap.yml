@@ -1,0 +1,22 @@
+# bootstrap.yml
+---
+# Den første del bruges til at udrulle users rollen med bootstrap brugern
+- hosts: all
+  remote_user: bootstrap101
+  vars:
+    ansible_sudo_password: "Bootstrap101"
+    ansible_password: "Bootstrap101"
+  roles:
+    - role: users
+
+# Den anden del sletter bootstrap brugeren efter sig, så ingen kan misbruge den
+- hosts: all
+  tasks:
+    - name: kill alle processer med bootstrap brugeren, så brugeren kan slettes
+      shell: killall -u bootstrap101
+      ignore_errors: true
+    - name: Slet bootstrap brugeren
+      user:
+        name: bootstrap101
+        remove: yes
+        state: absent

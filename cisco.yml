@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+  - name: Tager backup af alle switche ud fra variabler i hosts-cisco inventoriet
+    ios_config:
+      authorize: true
+      backup: true
+    register: backup

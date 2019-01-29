@@ -1,0 +1,62 @@
+{% if haproxy_backend_group_map is defined %}
+
+# "modules/backends.j2"
+## Host files haproxy_backends
+{% for backend_group in haproxy_backend_group_map %}
+backend b_{% if backend_group.custom_backend_name is defined %}{{ backend_group.custom_backend_name }}{% else %}{{ backend_group.name }}{% endif %} 
+{% if backend_group.mode is defined %}
+#Custom mode
+    mode {{ backend_group.mode }}
+{% endif %}
+{% if backend_group.check_options|default('true') %}
+    option {{ backend_group.check_options|default('httpchk GET /') }}
+{% endif %}
+{% if backend_group.balance is defined %}
+#Custom balance method
+    balance {{ backend_group.balance }}
+{% endif %}
+{% if backend_group.timeout is defined %}
+#Custom timeout rule
+    timeout {{ backend_group.timeout }}
+{% endif %}
+{% if backend_group.include_backend_rules is defined %}
+#Include custom backend blop
+{% include "modules/backend_includes/" + backend_group.include_backend_rules  + ".j2" %}
+{% endif %}
+{% if backend_group.use_backend is defined %}
+{% set backend_group_name = backend_group.use_backend %}
+{% else %}
+{% set backend_group_name = backend_group.name %}
+{% endif %}
+{% for host in groups[backend_group_name]|sort %}
+    server {{ hostvars[host].inventory_hostname }} {{ hostvars[host].haproxy_backend_ip }}:{{ backend_group.port|default('80') }}{% if backend_group.server_check|default('true') %} {{ backend_group.server_check|default('check')  }}{% endif %}{% if not loop.first and backend_group.master_and_backup|default(false) %} backup{% endif %} 
+{% endfor %}
+
+{% endfor %}
+
+{% endif %}
+
+{% if haproxy_non_hostfile_backends is defined %}
+
+#"modules/backends.j2"
+## Non-Host files haproxy_backends
+{% for backends in haproxy_non_hostfile_backends|sort %}
+backend b_{{ backends.group_name }}
+{% if backends.check_options|default('true') %}
+    option {{ backends.check_options|default('httpchk GET /') }}
+{% endif %}
+{% for server in backends.server %}
+    server {{ server }}{% if backends.server_check|default('true') %} {{ backends.server_check|default('check') }} {% endif %} 
+{% endfor %}
+
+{% endfor %}
+
+{% endif %}
+
+{% if haproxy_letsencrypt_backend is defined %}
+
+# "modules/backends.j2"
+backend b_letsencrypt
+    server b_le {{ haproxy_letsencrypt_backend }}
+
+{% endif %}

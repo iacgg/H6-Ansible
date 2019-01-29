@@ -1,0 +1,51 @@
+# {{ ansible_managed }}
+global_defs {
+  enable_script_security
+  script_user root
+}
+
+{% if vrrp_scripts is defined %}
+{% for name, values in vrrp_scripts.items() %}
+vrrp_script {{ name }} {
+  script "{{ values.scripts }}"
+  interval {{ values.interval }}
+}
+{% endfor %}
+{% endif %}
+
+{% if vrrp_groups is defined %}
+
+{% for name, group in vrrp_groups.items() %}
+vrrp_sync_group {{ name }} {
+  group {
+  {% for k, v in group.items() %}
+    {{ k }}
+  {% endfor %}
+  }
+}
+
+{% for k, v in group.items() -%}
+vrrp_instance {{ k }} {
+  virtual_router_id {{ v.id }}
+  advert_int 1
+  priority {{ keepalived_priority }}
+  state MASTER
+  interface {% for interface in ansible_interfaces %}{% if hostvars[inventory_hostname]['ansible_%s' | format(interface)].ipv4.address | ipsubnet(24,0) == v.range | ipsubnet(24,0) %}{{ interface }}{% endif %}{% endfor %} 
+  virtual_ipaddress {
+#    {{ v.range }} dev {{ v.iface }}
+    {{ v.range }} dev {% for interface in ansible_interfaces %}{% if hostvars[inventory_hostname]['ansible_%s' | format(interface)].ipv4.address | ipsubnet(24,0) == v.range | ipsubnet(24,0) %}{{ interface }}{% endif %}{% endfor %} 
+#    {{ v.range }}
+  }
+{% if v.scripts is defined %}
+  track_script {
+    {{ v.scripts }}
+  }
+{% endif %}
+}
+
+{% endfor %}
+
+{% endfor %}
+
+{% endif %}
+

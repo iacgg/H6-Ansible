@@ -1,0 +1,14 @@
+---
+- name: sikre at brugeren er oprettet
+  run_once: true
+  mysql_user:
+    name: "{{ item.username }}"
+    password: "{{ item.password }}"
+    priv: "{{ item.database }}.*:all"
+    host: "%"
+    state: present
+    login_user: root
+    login_password: "{{ percona_root_password }}"
+  with_list: "{{ mysql_info }}"
+  tags:
+    - mysql

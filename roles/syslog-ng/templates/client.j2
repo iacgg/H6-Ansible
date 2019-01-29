@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+## Default
+{% include "header.j2" %}
+{% include "sources.j2" %}
+{% include "destinations.j2" %}
+{% include "filters.j2" %}
+{% include "logs.j2" %}
+## Default end
+
+{% for templates in syslog_ng_template_list %}
+{% include templates %}
+
+{% endfor %}

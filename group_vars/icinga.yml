@@ -1,0 +1,16 @@
+---
+# Sætter root password for icinga
+mysql_root_password: Test1234
+
+icinga_custom_hosts:
+  - dc1
+  - dc2
+  - fs1
+  - fs2
+  - esxi1
+  - esxi2
+  - san1
+  - san2
+  - vv1
+  - 94.18.194.96
+  - 94.18.194.97

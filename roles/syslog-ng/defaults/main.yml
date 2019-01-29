@@ -1,0 +1,37 @@
+---
+syslog_ng_conf_d_enable: true
+syslog_ng_template_list:
+  - custom-templates.j2
+  - custom-rewrites.j2
+  - custom-sources.j2
+  - custom-destinations.j2
+  - custom-filters.j2
+  - custom-log.j2
+
+syslog_ng_group: root
+syslog_ng_user: root
+
+syslog_ng_config_version_auto_detect: true
+
+# this variable will be overwritten when syslog_ng_config_version_auto_detect is true
+syslog_ng_config_version: "3.13"
+
+
+syslog_ng_config_dir: "/etc/syslog-ng"
+syslog_ng_config_file: "{{ syslog_ng_config_dir }}/syslog-ng.conf"
+
+syslog_ng_server: false
+
+haproxy_log_path: "/var/log"
+
+syslog_ng_log:
+  - desc: Ubuntu, our default log behaver to ops graylog
+    sources:
+      - s_src
+      - s_dpkg_log
+    destinations:
+      - d_syslog_server
+
+# Bliver ikke brugt endnu
+# syslog_ng_ca: "self-assigned-101-v1-ca.pem"
+# syslog_ng_cert_basename: "self-assigned-101-v1"

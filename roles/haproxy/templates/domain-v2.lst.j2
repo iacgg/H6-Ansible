@@ -1,0 +1,15 @@
+# {{ ansible_managed }}
+{% for list in item.value -%}
+
+{% if list.from is defined %}
+{% for domain in list.from %}
+{{ domain }}
+{% endfor %}
+{% endif %}
+{% if list.domains is defined %}
+{% for domain in list.domains %}
+{{ domain }}
+{% endfor %}
+{% endif %}
+
+{%- endfor %}

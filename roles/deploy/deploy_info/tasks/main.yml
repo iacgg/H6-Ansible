@@ -1,0 +1,39 @@
+---
+- name: henter mysql info
+  set_fact:
+    mysql_info: "{{ deploy_info | json_query('*[].mysql[]') }}"
+  tags:
+    - mysql
+
+- debug:
+    verbosity: 1
+    msg: "{{ item }}"
+  with_list: "{{ mysql_info }}"
+  tags:
+    - mysql
+
+- name: henter web info
+  set_fact:
+    web_info: "{{ deploy_info | json_query('*[].web[]') }}"
+  tags:
+    - mysql
+
+- debug:
+    verbosity: 1
+    msg: "{{ item }}"
+  with_list: "{{ web_info }}"
+  tags:
+    - mysql
+
+- name: henter alt info
+  set_fact:
+    all_info: "{{ deploy_info }}"
+  tags:
+    - all_info
+
+- debug:
+    verbosity: 1
+    msg: "{{ item }}"
+  with_dict: "{{ all_info }}"
+  tags:
+    - all_info

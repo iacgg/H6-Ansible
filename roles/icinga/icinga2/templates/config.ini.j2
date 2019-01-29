@@ -1,0 +1,10 @@
+; {{ ansible_managed }}
+[global]
+show_stacktraces = "1"
+config_backend = "{{ icingaweb2_user_backend_type }}"
+config_resource = "{{ icingaweb2_user_ressource_name }}"
+
+[logging]
+log = "syslog"
+level = "ERROR"
+application = "icingaweb2"

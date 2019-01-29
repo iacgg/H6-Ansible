@@ -1,0 +1,190 @@
+---
+- name: Sikre at der tillades nonlocal adresser at bindes
+  sysctl:
+    name: "net.ipv4.ip_nonlocal_bind"
+    value: "1"
+    sysctl_set: yes
+    reload: yes
+  tags:
+    - haproxy
+    - sysctl
+
+- name: Sikre at flere sources porte kan bruges, hvis der kommer mange samtige requests
+  sysctl:
+    name: "net.ipv4.ip_local_port_range"
+    value: "10000 65535"
+    sysctl_set: yes
+    sysctl_file: /etc/sysctl.d/10-haproxy.conf
+    reload: yes
+  tags:
+    - haproxy
+    - sysctl
+
+- name: Sikre haproxy er installeret
+  package:
+    name: "haproxy"
+    state: present
+  tags:
+    - haproxy
+
+- name: Sikre at haproxy base dir findes
+  file:
+    path: "{{ haproxy_base_path }}"
+    state: directory
+  tags:
+    - haproxy
+
+- name: Sikre default pem findes
+  copy:
+    src: "default.pem"
+    dest: "{{ haproxy_base_path }}/default.pem"
+  tags:
+    - haproxy
+
+- name: Sikre certs mappe findes
+  file:
+    state: "directory"
+    path: "{{ item }}"
+  with_items:
+    - "{{ haproxy_base_path }}/letsencrypt.certs.d"
+  tags:
+    - haproxy
+
+- name: Sikre default cert findes
+  file:
+    src: "{{ haproxy_base_path }}/default.pem"
+    dest: "{{ item }}/default.pem"
+    state: "link"
+    force: yes
+  with_items:
+    - "{{ haproxy_base_path }}/letsencrypt.certs.d"
+  tags:
+    - haproxy
+
+- name: Sikre force_www mappe findes
+  file:
+    path: "{{ haproxy_base_path }}/force_www"
+    state: directory
+  when: haproxy_force_www_lists is defined
+  tags:
+    - haproxy
+
+- name: Sikre force www lister findes
+  template:
+    src: domain-v2.lst.j2
+    dest: "{{ haproxy_base_path }}/force_www/{{ item.key }}.lst"
+  when: haproxy_force_www_lists is defined
+  with_dict: "{{ haproxy_force_www_lists }}"
+  notify:
+    - reload haproxy
+  tags:
+    - haproxy
+
+- name: Sikre at force https mappen findes
+  file:
+    path: "{{ haproxy_base_path }}/force_https"
+    state: directory
+  when: haproxy_force_https_lists is defined
+  tags:
+    - haproxy
+
+- name: Sikre force https listerne findes
+  template:
+    src: domain-v2.lst.j2
+    dest: "{{ haproxy_base_path }}/force_https/{{ item.key }}.lst"
+  when:
+    - haproxy_force_https_lists is defined
+    - "https_legacy_https_lists|default(false) != true"
+  with_dict: "{{ haproxy_force_https_lists }}"
+  notify:
+    - reload haproxy
+  tags:
+    - haproxy
+
+- name: Sikre at del_header mappen findes
+  file:
+    path: "{{ haproxy_base_path }}/del_header"
+    state: directory
+  when: haproxy_del_header_lists is defined
+  tags:
+    - haproxy
+
+- name: Sikre at del header listerne findes
+  template:
+    src: domain-v2.lst.j2
+    dest: "{{ haproxy_base_path }}/del_header/{{ item.key }}.lst"
+  when: haproxy_del_header_lists is defined
+  with_dict: "{{ haproxy_del_header_lists }}"
+  notify:
+    - reload haproxy
+  tags:
+    - haproxy
+
+- name: Sikre at restricted_access mappen findes
+  file:
+    path: "{{ haproxy_base_path }}/restricted_access"
+    state: directory
+  when: haproxy_restricted_access_lists is defined
+  notify:
+    - reload haproxy
+  tags:
+    - haproxy
+
+- name: Sikre at restirced acces listerne findes
+  template:
+    src: domain-v2.lst.j2
+    dest: "{{ haproxy_base_path }}/restricted_access/{{ item.key }}.lst"
+  when: haproxy_restricted_access_lists is defined
+  with_dict: "{{ haproxy_restricted_access_lists }}"
+  notify:
+    - reload haproxy
+  tags:
+    - haproxy
+
+- name: Sikre at not found http siden findes
+  template:
+    src: "404notfound.http.j2"
+    dest: "{{ haproxy_base_path }}/404notfound.http"
+  when: haproxy_notfound_lists is defined
+  tags:
+    - haproxy
+
+- name: Sikre at allowed networks er synched
+  template:
+    src: "network_allowed.lst.j2"
+    dest: "{{ haproxy_base_path }}/network_allowed.lst"
+  when: haproxy_internal_allowed_networks is defined 
+  tags:
+    - haproxy
+
+- name: Sikre at backend mappen findes
+  file:
+    path: "{{ haproxy_base_path }}/backend"
+    state: directory
+  when: "'none' not in haproxy_all_backends_list"
+  tags:
+    - haproxy
+
+- name: Sikre at backend domains listeres er synched
+  template:
+    src: "backend_list.lst.j2"
+    dest: "{{ haproxy_base_path }}/backend/{{ item }}.lst"
+  when:
+    - 'haproxy_backend_domains is defined'
+    - "'none' not in haproxy_all_backends_list"
+  with_items: "{{ haproxy_all_backends_list }}"
+  notify:
+    - reload haproxy
+  tags:
+    - haproxy
+
+- name: Sikre at haproxy konfigurationen er i sync
+  template:
+    src: "haproxy{% if haproxy_config_version is defined %}-{{ haproxy_config_version }}{% endif %}.cfg.j2"
+    dest: "{{ haproxy_base_path }}/haproxy.cfg"
+    validate: haproxy -f %s -c -q
+  register: haproxy_config
+  notify:
+    - reload haproxy
+  tags:
+    - haproxy
