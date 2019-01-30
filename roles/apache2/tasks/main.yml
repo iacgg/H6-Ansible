@@ -7,17 +7,30 @@
   tags:
     - apache2
 
-- name: Sikre config og enabled er synced
-  synchronize:
-    src: "{{ item }}/"
-    dest: "/etc/apache2/{{ item }}"
-    owner: no
-    group: no
-  with_items:
-    - "conf-available"
-    - "conf-enabled"
+- name: Sikre apache conf er tilgængelige
+  template:
+    src: "apache-conf/{{ item }}"
+    dest: "/etc/apache2/conf-available/{{ item }}"
+  with_items: 
+    - 000-default.conf
+    - virtual.conf
+#"{{ apache_conf_available }}"
   notify:
-    - "restart apache2"
+    - restart apache2
+  tags:
+    - apache2
+    - apache2-config
+
+- name: Sikre at symlink findes til apache conf
+  file:
+    src: "../conf-available/{{ item }}"
+    dest: "/etc/apache2/conf-enabled/{{ item }}"
+    state: link
+  with_items: 
+    - 000-default.conf
+    - virtual.conf
+  notify:
+    - restart apache2
   tags:
     - apache2
     - apache2-config
