@@ -1,18 +1,18 @@
 Building configuration...
 
-Current configuration : 16970 bytes
+Current configuration : 17096 bytes
 !
-! Last configuration change at 14:20:35 UTC Mon Jan 28 2019 by admin
-! NVRAM config last updated at 14:20:37 UTC Mon Jan 28 2019 by admin
+! Last configuration change at 12:51:02 DKTime Tue Jan 29 2019
+! NVRAM config last updated at 12:13:56 DKTime Wed Jan 30 2019 by admin
 !
 version 16.3
 no service pad
-service timestamps debug datetime msec
-service timestamps log datetime msec
+service timestamps debug datetime msec localtime show-timezone
+service timestamps log datetime msec localtime show-timezone
 service password-encryption
 no platform punt-keepalive disable-kernel-core
 !
-hostname DLS-2
+hostname DLS2
 !
 !
 vrf definition DMZ
@@ -36,6 +36,8 @@ vrf definition Mgmt-vrf
 enable secret 5 $1$ttLR$uyw7DEWwU1OKk.MIkViTk/
 !
 no aaa new-model
+clock timezone DKTime 1 0
+clock summer-time DKTime recurring
 switch 1 provision ws-c3650-24ts
 !
 !
@@ -579,8 +581,10 @@ ip sla 1
  frequency 3
 ip sla schedule 1 life forever start-time now
 logging trap warnings
-logging host 10.100.60.15 vrf Klient transport udp port 2002
-logging host 10.100.60.15 vrf DMZ transport udp port 2002
+logging source-interface Vlan99 vrf Klient
+logging host 10.100.60.15
+logging host 10.100.60.15 vrf Klient
+logging host 10.100.60.15 vrf DMZ
 !
 !
 !

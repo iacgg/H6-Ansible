@@ -1,18 +1,18 @@
 Building configuration...
 
-Current configuration : 16829 bytes
+Current configuration : 16834 bytes
 !
-! Last configuration change at 15:20:44 DKTime Mon Jan 28 2019 by admin
-! NVRAM config last updated at 15:20:48 DKTime Mon Jan 28 2019 by admin
+! Last configuration change at 14:56:36 DKTime Wed Jan 30 2019 by admin
+! NVRAM config last updated at 12:13:59 DKTime Wed Jan 30 2019 by admin
 !
 version 16.3
 no service pad
-service timestamps debug datetime msec
-service timestamps log datetime msec
+service timestamps debug uptime
+service timestamps log datetime msec localtime show-timezone
 service password-encryption
 no platform punt-keepalive disable-kernel-core
 !
-hostname DLS-1
+hostname DLS1
 !
 !
 vrf definition DMZ
@@ -575,8 +575,9 @@ ip sla 1
  frequency 3
 ip sla schedule 1 life forever start-time now
 logging trap warnings
-logging host 10.100.60.15 vrf Klient transport udp port 2002
-logging host 10.100.60.15 vrf DMZ transport udp port 2002
+logging source-interface Vlan99 vrf Klient
+logging host 10.100.60.15 vrf DMZ
+logging host 10.100.60.15 vrf Klient
 !
 !
 !
@@ -591,6 +592,7 @@ banner motd ^CCNo access without permission!^C
 !
 line con 0
  logging synchronous
+ login local
  stopbits 1
 line aux 0
  stopbits 1
@@ -599,13 +601,11 @@ line vty 0 4
  logging synchronous
  login local
  transport input ssh
-line vty 5 14
+line vty 5 15
  exec-timeout 0 0
  logging synchronous
  login local
  transport input ssh
-line vty 15
- login
 !
 ntp server vrf Klient 10.0.50.25 minpoll 10 prefer
 ntp server vrf Klient 10.0.50.33 minpoll 10

@@ -1,9 +1,9 @@
 Building configuration...
 
-Current configuration : 15076 bytes
+Current configuration : 15182 bytes
 !
-! Last configuration change at 13:38:23 UTC Mon Jan 28 2019 by admin
-! NVRAM config last updated at 13:19:04 UTC Mon Jan 28 2019 by admin
+! Last configuration change at 22:26:19 UTC Wed Jan 30 2019 by admin
+! NVRAM config last updated at 21:30:10 UTC Wed Jan 30 2019 by admin
 !
 version 16.3
 no service pad
@@ -450,6 +450,7 @@ ip forward-protocol nd
 ip http server
 ip http authentication local
 ip http secure-server
+ip ssh version 2
 !
 !
 ip access-list extended AutoQos-4.0-wlan-Acl-Bulk-Data
@@ -497,7 +498,9 @@ ip access-list extended AutoQos-4.0-wlan-Acl-Transactional-Data
  permit tcp any any eq 8080
 !
 logging trap warnings
+logging source-interface Vlan99
 logging host 10.100.60.15 transport udp port 2002
+logging host 10.100.60.15
 !
 !
 !
@@ -509,7 +512,9 @@ banner login ^CCNo access without permission!^C
 banner motd ^CCNo access without permission!^C
 !
 line con 0
+ exec-timeout 0 0
  logging synchronous
+ login local
  stopbits 1
 line aux 0
  stopbits 1
