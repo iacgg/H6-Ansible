@@ -56,4 +56,10 @@ source src_remote {
 };
 {% endif -%}
 
+{%- if source == "s_haproxy" %}
+source s_haproxy {
+  unix-dgram("/var/lib/haproxy/dev/log");
+};
+{% endif -%}
+
 {% endfor -%}

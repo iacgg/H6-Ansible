@@ -1,4 +1,18 @@
 ---
+syslog_ng_log:
+  - desc: Ubuntu, our default log behaver to ops graylog
+    sources:
+      - s_src
+      - s_dpkg_log
+    destinations:
+      - d_syslog_server
+  - desc: Sender haproxy logs
+    sources:
+      - s_haproxy
+    destinations:
+      - d_syslog_server
+      
+
 # Bruges til keepalived for hvilken VIP adresser HAProxy skal have
 vrrp_groups:
   vg1:
