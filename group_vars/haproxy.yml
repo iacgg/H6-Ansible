@@ -92,6 +92,8 @@ haproxy_backend_domains:
     - 101.dk
     - intranet.101.dk
     - kunde.101.dk
+    - kunde2.101.dk
+    - kunde3.101.dk
 
 # Definere hvilken domæner der skal forces til www.
 haproxy_force_www_lists:
@@ -106,6 +108,8 @@ haproxy_force_https_lists:
       - 101.dk
       - intranet.101.dk
       - kunde.101.dk
+      - kunde2.101.dk
+      - kunde3.101.dk
 
 # Bruges til at slette evt headers i HAProxy
 haproxy_del_header_lists:

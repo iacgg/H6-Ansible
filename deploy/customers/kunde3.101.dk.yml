@@ -1,0 +1,12 @@
+---
+- web:
+    - name: "kunde3"
+      repo: https://github.com/mrscherrycoke/kunde101.git
+      titel: "Dette er en kunde nummer 3, af 101!"
+      domains:
+        - kunde3.101.dk
+      https: true
+- mysql:
+    - username: kunde3
+      password: kunde3MysqlPassword
+      database: kunde3

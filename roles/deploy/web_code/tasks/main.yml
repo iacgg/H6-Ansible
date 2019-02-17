@@ -1,4 +1,7 @@
 ---
+- pause:
+    prompt: 'Fortsæt?'
+
 - name: sikre at website mapperne findes
   block:
     - file:
@@ -12,6 +15,9 @@
   tags:
     - web
     
+- pause:
+    prompt: 'Fortsæt?'
+
 - name: cloner kode ned
   git:
     repo: "{{ item.repo }}"
@@ -21,6 +27,9 @@
   with_list: "{{ web_info }}"
   tags:
     - web
+
+- pause:
+    prompt: 'Fortsæt?'
 
 - name: sikre at permissions er korrekte
   file:

@@ -1,4 +1,7 @@
 ---
+#- pause:
+#    prompt: 'Fortsæt?'
+
 - name: henter mysql info
   set_fact:
     mysql_info: "{{ deploy_info | json_query('*[].mysql[]') }}"
@@ -37,3 +40,6 @@
   with_dict: "{{ all_info }}"
   tags:
     - all_info
+
+- pause:
+    prompt: 'Fortsæt?'
