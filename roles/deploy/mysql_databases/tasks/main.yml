@@ -9,3 +9,6 @@
   with_list: "{{ mysql_info }}"
   tags:
     - mysql
+
+#- pause:
+#    prompt: 'Fortsæt?'

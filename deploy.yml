@@ -4,6 +4,8 @@
   gather_facts: false
   become: false
   tasks:
+#    - pause:
+#        prompt: 'Start?'
     - name: Hent customer information
       local_action:
         module: command

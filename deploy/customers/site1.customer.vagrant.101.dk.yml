@@ -1,0 +1,22 @@
+---
+- web:
+    - name: "site1"
+      titel: "Site 1 titel custom"
+      repo: https://github.com/mrscherrycoke/homepage101.git
+      domains:
+        - site1.customer.vagrant.101.dk
+      fpm_settings:
+        - mode: dynamic
+          max_children: 20
+          start_servers: 10
+          min_spare_servers: 7
+          max_spare_servers: 12
+      php_settings:
+        max_file_uploads: 50
+        upload_max_filesize: 25M
+        post_max_size: 12M
+      https: true
+- mysql:
+   - username: "site1"
+     password: Site1Password
+     database: "site1"

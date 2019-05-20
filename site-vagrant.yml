@@ -1,0 +1,7 @@
+# site.yml
+---
+# Best practise for ansible foreskriver at site.yml bruges til at includere de andre playbooks
+- import_playbook: core-vagrant.yml
+- import_playbook: mysql.yml
+- import_playbook: web.yml
+- import_playbook: haproxy.yml

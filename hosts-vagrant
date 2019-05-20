@@ -1,0 +1,25 @@
+[haproxy]
+haproxy01.vagrant.101.dk keepalived_priority=101
+haproxy02.vagrant.101.dk keepalived_priority=100
+
+[haproxy:vars]
+vrrp_private_vip="{{ lookup('dig', 'haproxy.vagrant.101.dk') }}"
+
+[web]
+web01.vagrant.101.dk
+web02.vagrant.101.dk
+
+[mysql]
+mysql01.vagrant.101.dk
+mysql02.vagrant.101.dk
+mysql03.vagrant.101.dk
+
+[mysql-master]
+mysql01.vagrant.101.dk
+
+[all:vars]
+ansible_user=vagrant
+ansible_ssh_private_key_file=~/.vagrant.d/insecure_private_key
+ansible_password=vagrant
+ansible_ssh_password=vagrant
+ansible_become_password=vagrant

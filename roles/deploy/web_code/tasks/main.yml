@@ -1,4 +1,7 @@
 ---
+#- pause:
+#    prompt: 'Fortsæt?'
+
 - name: sikre at website mapperne findes
   block:
     - file:
@@ -12,6 +15,9 @@
   tags:
     - web
     
+#- pause:
+#    prompt: 'Fortsæt?'
+
 - name: cloner kode ned
   git:
     repo: "{{ item.repo }}"
@@ -21,6 +27,9 @@
   with_list: "{{ web_info }}"
   tags:
     - web
+
+#- pause:
+#    prompt: 'Fortsæt?'
 
 - name: sikre at permissions er korrekte
   file:
@@ -35,7 +44,7 @@
 
 - name: kører bootstrap wp config
   ignore_errors: true
-  shell: "wp config list --allow-root --path=/var/www/virtual/{{ item[0].name }}/releases/{{ ansible_date_time.epoch }} || wp core config --allow-root --path=/var/www/virtual/{{ item[0].name }}/releases/{{ ansible_date_time.epoch }} --dbhost=mysql.101.loc --dbname={{ item[1].database }} --dbuser={{ item[1].username }} --dbpass={{ item[1].password }}"
+  shell: "wp config list --allow-root --path=/var/www/virtual/{{ item[0].name }}/releases/{{ ansible_date_time.epoch }} || wp core config --allow-root --path=/var/www/virtual/{{ item[0].name }}/releases/{{ ansible_date_time.epoch }} --dbhost={{ hostvars[groups['mysql-master'][0]]['inventory_hostname'] }} --dbname={{ item[1].database }} --dbuser={{ item[1].username }} --dbpass={{ item[1].password }}"
   with_together:
     - "{{ web_info }}"
     - "{{ mysql_info }}"

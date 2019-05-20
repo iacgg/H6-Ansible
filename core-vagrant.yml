@@ -1,0 +1,8 @@
+# core.yml
+---
+- hosts: all
+  roles:
+#    - role: lvm
+    - role: hosts
+    - role: apt_cache_update
+    - role: users
