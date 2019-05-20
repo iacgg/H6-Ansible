@@ -10,5 +10,5 @@
   tags:
     - mysql
 
-- pause:
-    prompt: 'Fortsæt?'
+#- pause:
+#    prompt: 'Fortsæt?'

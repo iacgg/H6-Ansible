@@ -1,8 +1,22 @@
 ---
+- set_fact:
+    dfs_location: /dfs
+  tags:
+    - web
+
+- name: hack for vagrant
+  file:
+    path: "{{ dfs_location }}"
+    owner: www-data
+    group: www-data
+    state: directory
+  tags:
+    - web
+
 - name: sikre at shared folder til hjemmesiden findes
   run_once: true
   file:
-    path: "/mnt/dfs/{{ item.name }}"
+    path: "{{ dfs_location }}/{{ item.name }}"
     owner: www-data
     group: www-data
     state: directory
@@ -31,7 +45,7 @@
 
 - name: sikre at symlink findes i releases
   file:
-    src: "/mnt/dfs/{{ item.name }}"
+    src: "{{ dfs_location }}/{{ item.name }}"
     dest: "/var/www/virtual/{{ item.name }}/releases/{{ ansible_date_time.epoch }}/wp-content/uploads"
     state: link
     force: true

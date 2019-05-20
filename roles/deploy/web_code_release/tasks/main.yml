@@ -1,6 +1,6 @@
 ---
-- pause:
-    prompt: 'Fortsæt?'
+#- pause:
+#    prompt: 'Fortsæt?'
 
 - name: sikre at release symlink er oprette fra nyeste release
   file:

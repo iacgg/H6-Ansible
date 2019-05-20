@@ -41,5 +41,5 @@
   tags:
     - all_info
 
-- pause:
-    prompt: 'Fortsæt?'
+#- pause:
+#    prompt: 'Fortsæt?'
