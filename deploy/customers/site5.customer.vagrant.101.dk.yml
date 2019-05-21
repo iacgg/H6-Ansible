@@ -1,0 +1,20 @@
+---
+- web:
+    - name: "site5"
+      titel: "Site 5 titel custom"
+      repo: https://github.com/mrscherrycoke/homepage101.git
+      domains:
+        - site5.customer.vagrant.101.dk
+      fpm_settings:
+        - mode: dynamic
+          max_children: 20
+          start_servers: 10
+          min_spare_servers: 7
+          max_spare_servers: 12
+      php_settings:
+        post_max_size: 12M
+      https: true
+- mysql:
+   - username: "site5"
+     password: Site5Password
+     database: "site5"

@@ -1,0 +1,12 @@
+---
+- web:
+    - name: "site4"
+      titel: "Site 4 titel custom"
+      repo: https://github.com/mrscherrycoke/homepage101.git
+      domains:
+        - site4.customer.vagrant.101.dk
+      https: true
+- mysql:
+   - username: "site4"
+     password: Site4Password
+     database: "site4"
