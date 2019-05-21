@@ -11,6 +11,10 @@ SCRIPT
 
 Vagrant.configure("2") do |config|
 
+  config.vm.provider :virtualbox do |v|
+    v.customize ["modifyvm", :id, "--memory", "512", "--cpus", "1"]
+  end
+
   (1..2).each do |i|
     config.vm.define "haproxy0#{i}" do |haproxy|
       haproxy.vm.box = "ubuntu/bionic64"
