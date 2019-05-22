@@ -6,13 +6,15 @@ usermod -aG sudo bootstrap
 echo -e "Bootstrap101\nBootstrap101" | passwd bootstrap
 sed -i.bak  's/^PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 systemctl restart ssh
+systemctl stop unattended-upgrades
+systemctl disable unattended-upgrades
 reboot
 SCRIPT
 
 Vagrant.configure("2") do |config|
 
   config.vm.provider :virtualbox do |v|
-    v.customize ["modifyvm", :id, "--memory", "512", "--cpus", "1"]
+    v.customize ["modifyvm", :id, "--memory", "1024", "--cpus", "1"]
     v.linked_clone = true
   end
 

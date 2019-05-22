@@ -24,7 +24,6 @@
   roles:
     - role: deploy/deploy_info
       deploy_info: "{{ hostvars['localhost'].deploy_information.stdout }}"
-
   tags:
     - always
 
